@@ -7,7 +7,7 @@ import { PublicHeader } from "@/components/ui/AppHeader";
 export default function LandingPage() {
   const benefits = [
     { icon: Satellite, title: "Verifikasi otomatis", desc: "Satelit Sentinel-2, NDVI, dan foto lahan dipakai untuk menilai tutupan pohon." },
-    { icon: BarChart3, title: "Estimasi pendapatan", desc: "Petani langsung melihat proyeksi carbon credit tahunan dalam rupiah." },
+    { icon: BarChart3, title: "Estimasi pendapatan", desc: "Pengguna langsung melihat proyeksi carbon credit tahunan dalam rupiah." },
     { icon: Wallet, title: "Pencairan e-wallet", desc: "Saldo hasil penjualan credit ditarik ke DANA, GoPay, OVO, atau rekening mitra." },
   ];
 
@@ -16,11 +16,11 @@ export default function LandingPage() {
       <PublicHeader />
       <section className="web-container grid gap-12 pb-16 pt-14 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:pb-24 lg:pt-20">
         <div>
-          <div className="mb-5 inline-flex rounded-full bg-green-50 px-4 py-2 text-xs font-bold uppercase tracking-[.14em] text-green-700">Untuk petani Indonesia</div>
+          <div className="mb-5 inline-flex rounded-full bg-green-50 px-4 py-2 text-xs font-bold uppercase tracking-[.14em] text-green-700">Untuk Indonesia</div>
           <h1 className="display-xl max-w-4xl">Lahanmu, pendapatanmu — dari menjaga pohon.</h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-ink-700">Daftarkan lahan agroforestri, verifikasi otomatis, lalu dapatkan estimasi pendapatan carbon credit tanpa biaya MRV mahal.</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/login"><Button size="lg" leftIcon={<Leaf className="h-5 w-5" />}>Daftar Sebagai Petani</Button></Link>
+            <Link href="/login"><Button size="lg" leftIcon={<Leaf className="h-5 w-5" />}>Daftar</Button></Link>
             <Link href="/login"><Button size="lg" variant="secondary">Saya Sudah Punya Akun</Button></Link>
           </div>
           <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
@@ -34,7 +34,7 @@ export default function LandingPage() {
           <div className="absolute -right-10 -top-10 h-52 w-52 rounded-full bg-green-100 blur-3xl" />
           <Card className="relative overflow-hidden rounded-[28px] p-0 shadow-float">
             <div className="bg-green-700 p-8 text-green-50">
-              <div className="eyebrow !text-green-50/70">Dashboard petani</div>
+              <div className="eyebrow !text-green-50/70">Dashboard Pengguna</div>
               <div className="mt-3 font-display text-4xl font-medium tracking-[-.02em]">Pak Asep</div>
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <Panel label="Saldo tersedia" value="Rp 245.000" dark />

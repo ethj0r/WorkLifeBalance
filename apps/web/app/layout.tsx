@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "CarbonLink",
-  description: "Platform MRV carbon credit untuk petani agroforestri Indonesia",
+  description: "Platform MRV carbon credit untuk pemilik lahan agroforestri Indonesia",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

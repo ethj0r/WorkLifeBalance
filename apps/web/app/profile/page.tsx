@@ -16,8 +16,8 @@ export default function ProfilePage() {
       <PublicHeader />
       <section className="web-container auth-shell">
         <div>
-          <div className="mb-4 inline-flex rounded-full bg-green-50 px-4 py-2 text-xs font-bold uppercase tracking-[.14em] text-green-700">Profil petani</div>
-          <h1 className="display-lg max-w-3xl">Kenali petani sebelum lahan diverifikasi.</h1>
+          <div className="mb-4 inline-flex rounded-full bg-green-50 px-4 py-2 text-xs font-bold uppercase tracking-[.14em] text-green-700">Profil Pengguna</div>
+          <h1 className="display-lg max-w-3xl">Kenali pengguna sebelum lahan diverifikasi.</h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-ink-600">Data dasar ini dipakai untuk personalisasi dashboard dan menjadi fondasi data kepemilikan lahan.</p>
         </div>
         <Card className="auth-card">
