@@ -519,19 +519,19 @@ function StepPhotos({
       </p>
 
       {/* Ground-level tips */}
-      <div className="mt-4 flex flex-wrap gap-2">
-        {["Tegakkan pohon", "Batas lahan", "Kanopi dari bawah", "Tanaman dominan"].map((tip) => (
+      {/* <div className="mt-4 flex flex-wrap gap-2"> */}
+        {/* {["Tegakkan pohon", "Batas lahan", "Kanopi dari bawah", "Tanaman dominan"].map((tip) => (
           <span
             key={tip}
             className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
           >
             {tip}
           </span>
-        ))}
-        <span className="rounded-full border border-[#B23B3B]/20 bg-[#B23B3B]/5 px-3 py-1 text-xs font-semibold text-[#B23B3B]">
+        ))} */}
+        {/* <span className="rounded-full border border-[#B23B3B]/20 bg-[#B23B3B]/5 px-3 py-1 text-xs font-semibold text-[#B23B3B]">
           ✕ Bukan aerial/drone
         </span>
-      </div>
+      </div> */}
 
       <div className="mt-8 space-y-8">
         {/* Legal document — required */}
