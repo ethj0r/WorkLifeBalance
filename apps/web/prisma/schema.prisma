@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlotStatus {
+  pending
+  verifying
+  verified
+  credit_issued
+}
+
+enum VerificationStatus {
+  queued
+  running
+  verified
+  rejected
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  province  String?
+  regency   String?
+  balance   Int      @default(0)
+  plots     Plot[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Plot {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  name           String
+  address        String
+  areaHa         Float
+  landType       String
+  ownership      String
+  ownerName      String?
+  polygonGeojson Json?
+  dominantTrees  String[]
+  status         PlotStatus     @default(pending)
+  verifications  Verification[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model Verification {
+  id             String             @id @default(cuid())
+  plotId         String
+  plot           Plot               @relation(fields: [plotId], references: [id])
+  status         VerificationStatus @default(queued)
+  ndvi           Float?
+  treesDetected  Int?
+  confidence     Int?
+  carbonTonsYear Float?
+  incomeYearIdr  Int?
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+}
+
+model Withdrawal {
+  id            String   @id @default(cuid())
+  userId        String
+  amountIdr     Int
+  walletName    String
+  walletAccount String
+  status        String   @default("processing")
+  createdAt     DateTime @default(now())
+}
