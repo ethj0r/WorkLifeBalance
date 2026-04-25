@@ -3,9 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Camera,
   CircleCheck,
-  FileText,
   Info,
   MapPin,
   ShieldCheck,
@@ -14,6 +12,9 @@ import {
 } from "lucide-react";
 
 import { PolygonEditor } from "@/components/maps/PolygonEditor";
+import { FileUploadCard } from "@/components/upload/FileUploadCard";
+import { ImageUploadList } from "@/components/upload/ImageUploadList";
+import type { ImageEntry } from "@/components/upload/ImageUploadList";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -52,6 +53,8 @@ type Form = {
   trees: string[];
   consent: boolean;
   polygonPoints: PolygonPoint[];
+  legalDoc: File | null;
+  landImages: ImageEntry[];
 };
 
 const initialPolygonPoints: PolygonPoint[] = [
@@ -80,6 +83,8 @@ export default function NewPlotPage() {
     trees: ["Cengkeh", "Kopi", "Sengon"],
     consent: false,
     polygonPoints: initialPolygonPoints,
+    legalDoc: null,
+    landImages: [],
   });
 
   useEffect(() => {
@@ -127,6 +132,11 @@ export default function NewPlotPage() {
       owner: "Asep Suryadi",
     };
   }
+
+  const isPhotoStepValid =
+    form.legalDoc !== null && form.landImages.length >= 3;
+
+  const nextDisabled = step === 5 && !isPhotoStepValid;
 
   const next = () => {
     if (step < labels.length - 1) {
@@ -213,7 +223,7 @@ export default function NewPlotPage() {
 
               {step === 4 && <StepDetail form={form} setForm={setForm} />}
 
-              {step === 5 && <StepPhotos />}
+              {step === 5 && <StepPhotos form={form} setForm={setForm} />}
 
               {step === 6 && <StepReview form={form} setForm={setForm} />}
             </div>
@@ -224,7 +234,7 @@ export default function NewPlotPage() {
                   Kembali
                 </Button>
 
-                <Button onClick={next}>
+                <Button onClick={next} disabled={nextDisabled}>
                   {step === labels.length - 1 ? "Daftarkan Lahan" : "Lanjut"}
                 </Button>
               </div>
@@ -488,48 +498,90 @@ function StepDetail({
   );
 }
 
-function StepPhotos() {
+function StepPhotos({
+  form,
+  setForm,
+}: {
+  form: Form;
+  setForm: (f: Form) => void;
+}) {
+  const photoError =
+    form.landImages.length > 0 && form.landImages.length < 3
+      ? `Minimal 3 foto diperlukan. Sudah ada ${form.landImages.length}, tambahkan ${3 - form.landImages.length} lagi.`
+      : undefined;
+
   return (
     <div>
-      <h2 className="display-sm">Foto bukti lahan</h2>
-      <p className="mt-2 text-sm leading-6 text-ink-500">
-        Foto pohon dari berbagai sudut. Minimal 3 foto.
+      <h2 className="display-sm">Foto kondisi lahan</h2>
+      <p className="mt-3 max-w-xl text-sm leading-6 text-ink-500">
+        Upload foto dari <strong className="text-ink-700">permukaan tanah</strong>, bukan foto udara atau drone.
+        Foto ini digunakan untuk menilai kondisi nyata lahan.
       </p>
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
-        <div className="space-y-4">
-          <Field
-            label="Dokumen legal (opsional)"
-            hint="Sertifikat / SPPT meningkatkan trust score"
+      {/* Ground-level tips */}
+      <div className="mt-4 flex flex-wrap gap-2">
+        {["Tegakkan pohon", "Batas lahan", "Kanopi dari bawah", "Tanaman dominan"].map((tip) => (
+          <span
+            key={tip}
+            className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
           >
-            <div className="rounded-xl border border-dashed border-ink-200 bg-white p-6 text-center">
-              <FileText className="mx-auto h-6 w-6 text-ink-500" />
-              <div className="mt-2 text-sm text-ink-500">
-                Tap untuk upload
-              </div>
-            </div>
-          </Field>
-        </div>
-
-        <Field label="Foto kondisi lahan" hint="3 foto terupload">
-          <div className="grid grid-cols-4 gap-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="aspect-square rounded-xl bg-gradient-to-br from-green-700 to-green-400 p-2 text-right"
-              >
-                <span className="rounded bg-white/90 px-2 py-1 text-xs font-semibold text-green-700">
-                  ✓ Foto {i}
-                </span>
-              </div>
-            ))}
-
-            <div className="grid aspect-square place-items-center rounded-xl border border-dashed border-ink-200 bg-white">
-              <Camera className="h-6 w-6 text-ink-500" />
-            </div>
-          </div>
-        </Field>
+            {tip}
+          </span>
+        ))}
+        <span className="rounded-full border border-[#B23B3B]/20 bg-[#B23B3B]/5 px-3 py-1 text-xs font-semibold text-[#B23B3B]">
+          ✕ Bukan aerial/drone
+        </span>
       </div>
+
+      <div className="mt-8 space-y-8">
+        {/* Legal document — required */}
+        <FileUploadCard
+          label="Dokumen legal lahan"
+          hint="Sertifikat tanah, SPPT, atau surat keterangan lahan · PDF, JPG, PNG"
+          accept=".pdf,.jpg,.jpeg,.png"
+          file={form.legalDoc}
+          onChange={(file) => setForm({ ...form, legalDoc: file })}
+          required
+          error={
+            form.legalDoc === null && form.landImages.length >= 3
+              ? "Dokumen legal wajib diupload untuk melanjutkan."
+              : undefined
+          }
+        />
+
+        {/* Divider */}
+        <div className="border-t border-[rgba(15,23,42,.06)]" />
+
+        {/* Land condition photos — required min 3 */}
+        <div>
+          <ImageUploadList
+            images={form.landImages}
+            onChange={(landImages) => setForm({ ...form, landImages })}
+            minRequired={3}
+            error={photoError}
+          />
+        </div>
+      </div>
+
+      {(form.legalDoc === null || form.landImages.length < 3) && (
+        <div className="mt-6 rounded-2xl border border-earth-200 bg-earth-50 px-5 py-4 text-sm leading-6 text-earth-700">
+          <p className="font-semibold text-earth-900">Sebelum lanjut, pastikan:</p>
+          <ul className="mt-2 space-y-1">
+            {form.legalDoc === null && (
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-earth-500 flex-none" />
+                Dokumen legal wajib diupload
+              </li>
+            )}
+            {form.landImages.length < 3 && (
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-earth-500 flex-none" />
+                Minimal 3 foto kondisi lahan dari darat ({form.landImages.length} dari 3 terpilih)
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
