@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { PolygonEditor } from "@/components/maps/PolygonEditor";
+import { PinpointMap } from "@/components/maps/Pinpointmap";
 import { FileUploadCard } from "@/components/upload/FileUploadCard";
 import { ImageUploadList } from "@/components/upload/ImageUploadList";
 import type { ImageEntry } from "@/components/upload/ImageUploadList";
@@ -30,6 +31,7 @@ import { addPlot } from "@/lib/plots-store";
 import {
   LAND_TYPE_OPTIONS,
   type LandType,
+  type LatLng,
   type Plot,
   type PolygonPoint,
 } from "@/lib/types";
@@ -55,6 +57,7 @@ type Form = {
   polygonPoints: PolygonPoint[];
   legalDoc: File | null;
   landImages: ImageEntry[];
+  pinLocation: LatLng | null;
 };
 
 const initialPolygonPoints: PolygonPoint[] = [
@@ -85,6 +88,7 @@ export default function NewPlotPage() {
     polygonPoints: initialPolygonPoints,
     legalDoc: null,
     landImages: [],
+    pinLocation: null,
   });
 
   useEffect(() => {
@@ -119,7 +123,11 @@ export default function NewPlotPage() {
     return {
       id: `plot-${Date.now()}`,
       name: form.name.trim() || "Lahan Baru",
-      location: form.address.trim() || "Lokasi belum diisi",
+      location: form.address.trim()
+        ? form.pinLocation
+          ? `${form.address.trim()} (${form.pinLocation.lat.toFixed(4)}, ${form.pinLocation.lng.toFixed(4)})`
+          : form.address.trim()
+        : "Lokasi belum diisi",
       area: safeArea,
       landType: form.landType,
       status: "verifying",
@@ -335,11 +343,14 @@ function StepLocation({
     <div>
       <h2 className="display-sm">Di mana lahannya?</h2>
       <p className="mt-2 text-sm leading-6 text-ink-500">
-        Ketik alamat atau pakai lokasi sekarang.
+        Ketik nama dan alamat lahan, lalu{" "}
+        <strong className="text-ink-700">klik peta</strong> untuk pasang titik
+        koordinat. Seret titik untuk memindahkan posisi.
       </p>
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
-        <div className="space-y-4">
+      <div className="mt-6 space-y-5">
+        {/* Text fields */}
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Nama lahan">
             <TextInput
               value={form.name}
@@ -347,26 +358,31 @@ function StepLocation({
             />
           </Field>
 
-          <Field label="Alamat lahan">
+          <Field label="Alamat / desa">
             <TextInput
               value={form.address}
               onChange={(e) => setForm({ ...form, address: e.target.value })}
             />
           </Field>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            leftIcon={<MapPin className="h-4 w-4" />}
-          >
-            Gunakan Lokasi Saya
-          </Button>
         </div>
 
-        <div className="relative h-[360px] overflow-hidden rounded-2xl border border-[rgba(15,23,42,.08)] bg-gradient-to-br from-green-400 via-green-200 to-green-50">
-          <div className="absolute left-1/2 top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-full place-items-center rounded-full border-4 border-white bg-green-700 text-white shadow-md">
-            <MapPin className="h-5 w-5" />
+        {/* Interactive pinpoint map */}
+        <div>
+          <div className="mb-2 flex items-center gap-1.5">
+            <span className="text-[13px] font-semibold text-ink-700">
+              Titik koordinat lahan
+            </span>
+            {!form.pinLocation && (
+              <span className="rounded-full bg-earth-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-earth-700">
+                Opsional
+              </span>
+            )}
           </div>
+          <PinpointMap
+            value={form.pinLocation}
+            onChange={(pinLocation) => setForm({ ...form, pinLocation })}
+            height={420}
+          />
         </div>
       </div>
     </div>
@@ -515,23 +531,25 @@ function StepPhotos({
       <h2 className="display-sm">Foto kondisi lahan</h2>
       <p className="mt-3 max-w-xl text-sm leading-6 text-ink-500">
         Upload foto dari <strong className="text-ink-700">permukaan tanah</strong>, bukan foto udara atau drone.
-        Foto ini digunakan untuk menilai kondisi nyata lahan.
+        Foto ini digunakan untuk menilai kondisi riil lahan: tegakan pohon,
+        batas kebun, kondisi kanopi, dan tanaman dominan. Semakin jelas,
+        semakin tinggi trust score.
       </p>
 
       {/* Ground-level tips */}
-      {/* <div className="mt-4 flex flex-wrap gap-2"> */}
-        {/* {["Tegakkan pohon", "Batas lahan", "Kanopi dari bawah", "Tanaman dominan"].map((tip) => (
+      <div className="mt-4 flex flex-wrap gap-2">
+        {["Tegakan pohon", "Batas lahan", "Kanopi dari bawah", "Tanaman dominan"].map((tip) => (
           <span
             key={tip}
             className="rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
           >
             {tip}
           </span>
-        ))} */}
-        {/* <span className="rounded-full border border-[#B23B3B]/20 bg-[#B23B3B]/5 px-3 py-1 text-xs font-semibold text-[#B23B3B]">
+        ))}
+        <span className="rounded-full border border-[#B23B3B]/20 bg-[#B23B3B]/5 px-3 py-1 text-xs font-semibold text-[#B23B3B]">
           ✕ Bukan aerial/drone
         </span>
-      </div> */}
+      </div>
 
       <div className="mt-8 space-y-8">
         {/* Legal document — required */}
@@ -554,6 +572,19 @@ function StepPhotos({
 
         {/* Land condition photos — required min 3 */}
         <div>
+          <div className="mb-1 flex items-center gap-1.5">
+            <span className="text-[13px] font-semibold text-ink-700">
+              Foto kondisi lahan dari darat
+            </span>
+            <span className="rounded-full bg-earth-100 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-earth-700">
+              Wajib · min. 3
+            </span>
+          </div>
+          <p className="mb-4 text-xs leading-5 text-ink-500">
+            Bukan foto satelit atau drone. Foto diambil berdiri di lahan,
+            mengarah ke pohon, batas, atau vegetasi.
+          </p>
+
           <ImageUploadList
             images={form.landImages}
             onChange={(landImages) => setForm({ ...form, landImages })}
@@ -563,6 +594,7 @@ function StepPhotos({
         </div>
       </div>
 
+      {/* Validation summary when neither is done */}
       {(form.legalDoc === null || form.landImages.length < 3) && (
         <div className="mt-6 rounded-2xl border border-earth-200 bg-earth-50 px-5 py-4 text-sm leading-6 text-earth-700">
           <p className="font-semibold text-earth-900">Sebelum lanjut, pastikan:</p>
@@ -618,6 +650,11 @@ function StepReview({
           </div>
           <div className="mt-1 text-sm text-ink-500">
             {form.address} · {areaHa.toLocaleString("id-ID")} ha
+            {form.pinLocation && (
+              <span className="ml-2 font-mono text-xs text-ink-400">
+                ({form.pinLocation.lat.toFixed(4)}, {form.pinLocation.lng.toFixed(4)})
+              </span>
+            )}
           </div>
         </Card>
 
