@@ -28,6 +28,16 @@ export type PolygonPoint = {
   y: number;
 };
 
+export type LandImageEntry = {
+  file: File;
+  previewUrl: string;
+};
+
+export type StepPhotosData = {
+  legalDoc: File | null;
+  landImages: LandImageEntry[];
+};
+
 export type Plot = {
   id: string;
   name: string;
