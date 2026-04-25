@@ -1,0 +1,10 @@
+{
+  "name": "@repo/web",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  }
+}
