@@ -26,15 +26,15 @@ export function AppHeader({
 
   return (
     <header className="sticky top-0 z-30 border-b border-[rgba(15,23,42,.08)] bg-paper/95 backdrop-blur">
-      <div className="relative flex h-[72px] items-center px-6 sm:px-8 lg:px-10">
-        <Link
-          href="/dashboard"
-          className="absolute left-6 flex items-center sm:left-8 lg:left-10"
-        >
+      <div className="web-container flex h-[72px] items-center justify-between">
+        
+        {/* Left */}
+        <Link href="/dashboard" className="flex items-center">
           <Logo />
         </Link>
 
-        <nav className="mx-auto hidden items-center gap-1 md:flex">
+        {/* Center nav */}
+        <nav className="hidden items-center gap-1 md:flex">
           {nav.map((item) => (
             <Link
               key={item.key}
@@ -50,9 +50,8 @@ export function AppHeader({
           ))}
         </nav>
 
-        {/* User chip — only renders when name is available */}
-        {displayName && (
-          <div className="absolute right-6 hidden items-center gap-2 sm:right-8 lg:right-10 md:flex">
+        {displayName ? (
+          <div className="hidden sm:flex items-center gap-2">
             <div className="flex items-center gap-2 rounded-full border border-[rgba(15,23,42,.08)] bg-white px-3 py-1.5 text-sm font-semibold text-ink-700 shadow-xs">
               <span className="grid h-6 w-6 place-items-center rounded-full bg-green-700 text-[11px] font-bold text-white">
                 {displayName.charAt(0).toUpperCase()}
@@ -60,6 +59,8 @@ export function AppHeader({
               {displayName}
             </div>
           </div>
+        ) : (
+          <div />
         )}
       </div>
     </header>
@@ -69,12 +70,13 @@ export function AppHeader({
 export function PublicHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-[rgba(15,23,42,.08)] bg-paper/95 backdrop-blur">
-      <div className="web-container flex h-[72px] items-center justify-between gap-6">
-        <Link href="/">
+      <div className="web-container flex h-[72px] items-center justify-between">
+        
+        <Link href="/" className="flex items-center">
           <Logo />
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <Link
             href="/login"
             className="hidden text-sm font-semibold text-green-700 sm:block"
