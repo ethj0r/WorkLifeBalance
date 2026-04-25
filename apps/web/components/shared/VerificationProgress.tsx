@@ -5,7 +5,7 @@ import { Satellite, Camera, GitMerge, Leaf, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { LiveProgress, type ProgressStage } from '@/components/ui/Layout';
 import { Button } from '@/components/ui/Button';
-import type { VerificationPipelineResult } from '@karbonkredit/types';
+import type { VerificationPipelineResult } from '@worklifebalance/types';
 
 interface VerificationProgressProps {
   plotId: string;

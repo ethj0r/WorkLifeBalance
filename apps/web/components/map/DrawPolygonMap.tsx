@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Loader2, Pencil, Undo2, Redo2, Trash2, Check } from 'lucide-react';
 import { calculatePolygonArea, fmtArea } from '@/lib/utils';
-import { MIN_AREA_HA, MAX_AREA_HA } from '@karbonkredit/types';
+import { MIN_AREA_HA, MAX_AREA_HA } from '@worklifebalance/types';
 import { cn } from '@/lib/utils';
 import 'leaflet/dist/leaflet.css';
 

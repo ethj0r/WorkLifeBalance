@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { MapPolygon } from '@/components/map/MapPolygon';
 import { Card, StatusBadge } from '@/components/ui/Card';
 import { fmtArea, fmtIDRshort } from '@/lib/utils';
-import type { PlotWithDetails } from '@karbonkredit/types';
+import type { PlotWithDetails } from '@worklifebalance/types';
 
 interface PlotCardProps {
   plot: PlotWithDetails;

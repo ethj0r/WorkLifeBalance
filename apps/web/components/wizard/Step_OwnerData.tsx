@@ -3,7 +3,7 @@
 import { CheckCircle2 } from 'lucide-react';
 import { useWizard } from './WizardContext';
 import { Field, TextInput, PhoneField, Select } from '@/components/ui/FormFields';
-import type { RelationshipType } from '@karbonkredit/types';
+import type { RelationshipType } from '@worklifebalance/types';
 
 const RELATIONSHIP_OPTIONS: { value: RelationshipType; label: string }[] = [
   { value: 'orang_tua',         label: 'Orang Tua' },

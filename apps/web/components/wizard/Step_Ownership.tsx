@@ -2,7 +2,7 @@
 
 import { User, Users, ChevronRight } from 'lucide-react';
 import { useWizard } from './WizardContext';
-import type { OwnershipType } from '@karbonkredit/types';
+import type { OwnershipType } from '@worklifebalance/types';
 
 const OPTIONS: {
   value: OwnershipType;

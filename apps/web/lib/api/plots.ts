@@ -1,7 +1,7 @@
 import 'server-only';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { IDR_PER_TCO2E } from '@karbonkredit/types';
-import type { PlotWithDetails, User } from '@karbonkredit/types';
+import { IDR_PER_TCO2E } from '@worklifebalance/types';
+import type { PlotWithDetails, User } from '@worklifebalance/types';
 
 /**
  * Fetch current authenticated user's profile dari database.

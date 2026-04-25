@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { VerificationProgress } from '@/components/shared/VerificationProgress';
-import type { VerificationPipelineResult } from '@karbonkredit/types';
+import type { VerificationPipelineResult } from '@worklifebalance/types';
 
 export function VerifyPageClient({
   plotId,

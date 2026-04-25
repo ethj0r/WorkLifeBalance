@@ -13,7 +13,7 @@ import type {
   RelationshipType,
   LandType,
   DocumentType,
-} from '@karbonkredit/types';
+} from '@worklifebalance/types';
 
 // ─────────────────────────────────────────────────────────────
 // Initial state

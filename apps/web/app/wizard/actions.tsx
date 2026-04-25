@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import type { AddLahanFormState, OwnershipType } from '@karbonkredit/types';
+import type { AddLahanFormState, OwnershipType } from '@worklifebalance/types';
 
 interface SubmitResult {
   success: boolean;

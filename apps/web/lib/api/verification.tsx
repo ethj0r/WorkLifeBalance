@@ -7,7 +7,7 @@ import type {
   PhotoAnalysisResult,
   SatelliteAnalysisResult,
   CarbonEstimationResult,
-} from '@karbonkredit/types';
+} from '@worklifebalance/types';
 
 export interface VerificationStageResult {
   stage: 'satellite' | 'photo' | 'cross_validation' | 'carbon';

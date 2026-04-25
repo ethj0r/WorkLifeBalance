@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from 'recharts';
 import { fmtIDR, fmtIDRshort } from '@/lib/utils';
-import { IDR_PER_TCO2E } from '@karbonkredit/types';
+import { IDR_PER_TCO2E } from '@worklifebalance/types';
 
 interface EarningsProjectionCardProps {
   annualSequestrationTco2e: number;

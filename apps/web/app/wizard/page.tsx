@@ -17,7 +17,7 @@ import { Step_Detail } from '@/components/wizard/Step_Detail';
 import { Step_Photos } from '@/components/wizard/Step_Photos';
 import { Step_Review } from '@/components/wizard/Step_Review';
 import { submitPlotAction } from './actions';
-import type { AddLahanFormState } from '@karbonkredit/types';
+import type { AddLahanFormState } from '@worklifebalance/types';
 
 export default function WizardPage() {
   const router = useRouter();

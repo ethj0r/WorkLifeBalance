@@ -2,7 +2,7 @@
 
 import { useWizard } from './WizardContext';
 import { Field, TextInput, Select, TreeChips } from '@/components/ui/FormFields';
-import { TREE_TYPES, type LandType } from '@karbonkredit/types';
+import { TREE_TYPES, type LandType } from '@worklifebalance/types';
 
 const LAND_TYPE_OPTIONS: { value: LandType; label: string; desc: string }[] = [
   {
