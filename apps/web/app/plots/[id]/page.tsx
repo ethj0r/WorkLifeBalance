@@ -104,9 +104,9 @@ export default function PlotDetailPage() {
               </Button>
             </Link>
 
-            <Button variant="secondary" leftIcon={<Leaf className="h-4 w-4" />}>
+            {/* <Button variant="secondary" leftIcon={<Leaf className="h-4 w-4" />}>
               Sertifikat
-            </Button>
+            </Button> */}
           </div>
         </div>
 
