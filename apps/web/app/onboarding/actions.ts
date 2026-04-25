@@ -1,4 +1,3 @@
-// apps/web/app/onboarding/actions.ts
 'use server';
 
 import { revalidatePath } from 'next/cache';

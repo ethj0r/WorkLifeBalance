@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Loader2, Pencil, Undo2, Redo2, Trash2, Check } from 'lucide-react';
-import { calculatePolygonArea, fmtArea } from '@/lib/utils';
+import { calculatePolygonArea, fmtArea } from '../../lib/utils';
 import { MIN_AREA_HA, MAX_AREA_HA } from '@worklifebalance/types';
-import { cn } from '@/lib/utils';
-import 'leaflet/dist/leaflet.css';
+import { cn } from '../../lib/utils';
+import 'leaflet/dist/leaflet';
 
 const MapContainer = dynamic(
   () => import('react-leaflet').then((m) => m.MapContainer),
@@ -101,12 +101,19 @@ export function DrawPolygonMap({
     pushHistory([]);
   };
 
+  type LatLng = [number, number];
+
+  const typedVertices = vertices as LatLng[];
+
   const area =
-    vertices.length >= 3
+    typedVertices.length >= 3
       ? calculatePolygonArea(
-          vertices.map(([lat, lng]) => [lng, lat]).concat([
-            [vertices[0][1], vertices[0][0]],
-          ])
+          [
+            ...typedVertices.map(
+              ([lat, lng]) => [lng, lat] as [number, number]
+            ),
+            [typedVertices[0][1], typedVertices[0][0]] as [number, number],
+          ]
         )
       : 0;
 

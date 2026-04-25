@@ -28,18 +28,18 @@ export default async function HomePage() {
   }
 
   const hasPlots = plots.length > 0;
-  const totalArea = plots.reduce((s, p) => s + (p.area_hectares || 0), 0);
+  const totalArea = plots.reduce((s: any, p: any) => s + (p.area_hectares || 0), 0);
   const totalAnnualEarnings = plots.reduce(
-    (s, p) => s + (p.annual_earnings_idr || 0),
+    (s: any, p: any) => s + (p.annual_earnings_idr || 0),
     0
   );
   const avgConfidence =
     plots.length > 0
       ? Math.round(
           plots.reduce(
-            (s, p) => s + (p.verification?.confidence_score || 0),
+            (s: any, p: any) => s + (p.verification?.confidence_score || 0),
             0
-          ) / plots.filter((p) => p.verification).length || 0
+          ) / plots.filter((p: any) => p.verification).length || 0
         )
       : 0;
 

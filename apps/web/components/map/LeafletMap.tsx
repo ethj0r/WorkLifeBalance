@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import 'leaflet/dist/leaflet.css';
+import 'leaflet/dist/leaflet';
 
 // Leaflet harus di-load client-side only (window dependency)
 const MapContainer = dynamic(

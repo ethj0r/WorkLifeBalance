@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link';
 import { Satellite, Wallet, ShieldCheck, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
