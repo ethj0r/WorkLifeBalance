@@ -15,12 +15,15 @@ export function AppHeader({
 
   return (
     <header className="sticky top-0 z-30 border-b border-[rgba(15,23,42,.08)] bg-paper/95 backdrop-blur">
-      <div className="web-container flex h-[72px] items-center justify-between gap-6">
-        <Link href="/dashboard" className="flex items-center">
+      <div className="relative flex h-[72px] items-center px-6 sm:px-8 lg:px-10">
+        <Link
+          href="/dashboard"
+          className="absolute left-6 flex items-center sm:left-8 lg:left-10"
+        >
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="mx-auto hidden items-center gap-1 md:flex">
           {nav.map((item) => (
             <Link
               key={item.key}
@@ -35,8 +38,6 @@ export function AppHeader({
             </Link>
           ))}
         </nav>
-
-        <div className="hidden md:block" />
       </div>
     </header>
   );
