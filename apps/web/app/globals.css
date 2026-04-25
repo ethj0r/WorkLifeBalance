@@ -1,28 +1,153 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand greens */
+  --green-900: #14361E;
+  --green-800: #1E4527;
+  --green-700: #234D2E;
+  --green-600: #2F6840;
+  --green-500: #4D8A5C;
+  --green-400: #6FAF6C;
+  --green-300: #9CC79A;
+  --green-200: #C9E2C5;
+  --green-100: #E4F1E2;
+  --green-50:  #F1FAF4;
+
+  /* Earth / warm neutrals */
+  --earth-900: #3A2E20;
+  --earth-700: #6B5538;
+  --earth-500: #A88B5C;
+  --earth-300: #D9C49A;
+  --earth-200: #E7D9BD;
+  --earth-100: #F2E8D4;
+  --earth-50:  #FAF5EA;
+
+  /* Neutrals */
+  --ink-900: #0F172A;
+  --ink-800: #1F2937;
+  --ink-700: #374151;
+  --ink-600: #4B5563;
+  --ink-500: #6B7280;
+  --ink-400: #9CA3AF;
+  --ink-300: #BDBD88;
+  --ink-200: #D1D5DB;
+  --ink-100: #E5E7EB;
+  --ink-50:  #F3F4F6;
+  --paper:   #FAFAF8;
+  --paper-pure: #FFFFFF;
+
+  /* Semantic */
+  --success: var(--green-600);
+  --warning: #B47A1F;
+  --danger: #B23B3B;
+  --info: #2C5A8A;
+
+  /* Status badges */
+  --status-pending-bg: #F2E8D4;
+  --status-pending-fg: #6B5538;
+  --status-verifying-bg: #DCE9F5;
+  --status-verifying-fg: #2C5A8A;
+  --status-verified-bg: #C9E2C5;
+  --status-verified-fg: #234D2E;
+  --status-issued-bg: #234D2E;
+  --status-issued-fg: #F1FAF4;
+
+  /* Surface & borders */
+  --bg-page: var(--paper);
+  --bg-surface: var(--paper-pure);
+  --bg-sunken: var(--ink-50);
+  --bg-mint: var(--green-50);
+  --bg-cream: var(--earth-50);
+  --bg-deep: var(--green-700);
+
+  --border-hairline: rgba(15, 23, 42, 0.08);
+  --border-soft: var(--ink-200);
+  --border-strong: var(--ink-300);
+  --border-focus: var(--green-600);
+
+  /* Shadows (soft, financial-grade) */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.08), 0 4px 8px rgba(15, 23, 42, 0.04);
+  --shadow-float: 0 16px 40px rgba(15, 23, 42, 0.10), 0 6px 12px rgba(15, 23, 42, 0.05);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@layer base {
+  html, body {
+    background: var(--bg-page);
+    color: var(--ink-900);
+    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .display {
+    font-family: var(--font-source-serif), 'Source Serif Pro', Georgia, serif;
+    color: var(--ink-900);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  h1 { font-size: 32px; }
+  h2 { font-size: 24px; letter-spacing: -0.01em; }
+  h3 { font-size: 20px; letter-spacing: -0.01em; font-weight: 600; }
+  h4 { font-size: 18px; font-family: var(--font-inter), sans-serif; font-weight: 600; letter-spacing: 0; }
+
+  p {
+    font-family: var(--font-inter), sans-serif;
+    line-height: 1.65;
+    color: var(--ink-700);
+    text-wrap: pretty;
+    margin: 0;
+  }
+
+  a {
+    color: var(--green-700);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 140ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  a:hover { border-bottom-color: currentColor; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  .display-xl { font-family: var(--font-source-serif), serif; font-size: 64px; line-height: 1.1; letter-spacing: -0.02em; font-weight: 500; }
+  .display-lg { font-family: var(--font-source-serif), serif; font-size: 48px; line-height: 1.1; letter-spacing: -0.02em; font-weight: 500; }
+  .display-md { font-family: var(--font-source-serif), serif; font-size: 36px; line-height: 1.25; letter-spacing: -0.02em; font-weight: 500; }
+  .display-sm { font-family: var(--font-source-serif), serif; font-size: 28px; line-height: 1.25; letter-spacing: -0.01em; font-weight: 500; }
+
+  .eyebrow {
+    font-family: var(--font-inter), sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-500);
+  }
+
+  .figure {
+    font-family: var(--font-source-serif), serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes shimmer {
@@ -33,4 +158,28 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseRing {
+  0% { box-shadow: 0 0 0 0 rgba(35, 77, 46, 0.4); }
+  100% { box-shadow: 0 0 0 12px rgba(35, 77, 46, 0); }
+}
+
+
+.leaflet-container {
+  font-family: var(--font-inter), sans-serif;
+  background: var(--green-50);
+}
+
+.leaflet-draw-toolbar a {
+  border-radius: 8px !important;
+}
+
+html {
+  scroll-behavior: smooth;
 }
