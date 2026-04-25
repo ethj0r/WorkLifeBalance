@@ -26,7 +26,7 @@ import {
   estimateAreaHaFromSvgPolygon,
   polygonToSvgPoints,
 } from "@/lib/geo";
-import { formatIDR } from "@/lib/format";
+import { decimalID, formatIDR } from "@/lib/format";
 import { addPlot } from "@/lib/plots-store";
 import {
   LAND_TYPE_OPTIONS,
@@ -58,16 +58,10 @@ type Form = {
   legalDoc: File | null;
   landImages: ImageEntry[];
   pinLocation: LatLng | null;
+  treeCount: number | null;
 };
 
-const initialPolygonPoints: PolygonPoint[] = [
-  { x: 90, y: 130 },
-  { x: 310, y: 90 },
-  { x: 560, y: 150 },
-  { x: 670, y: 330 },
-  { x: 380, y: 430 },
-  { x: 120, y: 330 },
-];
+const initialPolygonPoints: PolygonPoint[] = [];
 
 export default function NewPlotPage() {
   const router = useRouter();
@@ -76,10 +70,11 @@ export default function NewPlotPage() {
   const [verifying, setVerifying] = useState(false);
   const [stage, setStage] = useState(0);
   const [createdPlotId, setCreatedPlotId] = useState<string | null>(null);
+  const [previewPlot, setPreviewPlot] = useState<Plot | null>(null);
 
   const [form, setForm] = useState<Form>({
     ownership: null,
-    name: "Kebun Cengkeh Bukit Hijau",
+    name: "Hutan Mangrove",
     address: "Desa Sukamulya, Cianjur",
     landType: "Agroforestri",
     year: "2008",
@@ -89,6 +84,7 @@ export default function NewPlotPage() {
     legalDoc: null,
     landImages: [],
     pinLocation: null,
+    treeCount: null,
   });
 
   useEffect(() => {
@@ -117,9 +113,9 @@ export default function NewPlotPage() {
   function createPlotFromForm(): Plot {
     const area = estimateAreaHaFromSvgPolygon(form.polygonPoints);
     const safeArea = area > 0 ? area : 0.1;
-    const carbonTons = Number((safeArea * 10).toFixed(1));
-    const annualEarnings = Math.round(carbonTons * 70000);
-
+    const carbonTons = Number((safeArea * 0.5).toFixed(1));
+    const annualEarnings = Math.round(carbonTons * 65000);
+  
     return {
       id: `plot-${Date.now()}`,
       name: form.name.trim() || "Lahan Baru",
@@ -133,11 +129,13 @@ export default function NewPlotPage() {
       status: "verifying",
       annualEarnings,
       carbonTons,
-      confidence: 82,
-      ndvi: 0.64,
+      confidence: form.treeCount !== null ? 86 : 72,
+      ndvi: 0.78,
       trees: form.trees.length > 0 ? form.trees : ["Belum diisi"],
       polygon: polygonToSvgPoints(form.polygonPoints),
       owner: "Asep Suryadi",
+      polygonPoints: form.polygonPoints,
+      treeCount: form.treeCount,
     };
   }
 
@@ -153,7 +151,9 @@ export default function NewPlotPage() {
     }
 
     const newPlot = createPlotFromForm();
+
     addPlot(newPlot);
+    setPreviewPlot(newPlot);
     setCreatedPlotId(newPlot.id);
     setVerifying(true);
   };
@@ -167,7 +167,9 @@ export default function NewPlotPage() {
     setStep(step - 1);
   };
 
-  if (verifying) return <VerifyingView stage={stage} />;
+  if (verifying && previewPlot) {
+    return <VerifyingView stage={stage} plot={previewPlot} />;
+  }
 
   return (
     <main className="web-page">
@@ -405,11 +407,23 @@ function StepPolygon({
       </p>
 
       <div className="mt-5">
-        <PolygonEditor
-          value={form.polygonPoints}
-          onChange={(polygonPoints) => setForm({ ...form, polygonPoints })}
-          height={480}
-        />
+      <PolygonEditor
+        value={form.polygonPoints}
+        onChange={(polygonPoints) =>
+          setForm({
+            ...form,
+            polygonPoints,
+            treeCount: null,
+          })
+        }
+        onDetectionComplete={(result) =>
+          setForm({
+            ...form,
+            treeCount: result.treeCount,
+          })
+        }
+        height={480}
+      />
       </div>
 
       <div className="mt-4 flex gap-2 rounded-lg bg-earth-50 p-3 text-sm text-earth-700">
@@ -705,7 +719,36 @@ function StepReview({
   );
 }
 
-function VerifyingView({ stage }: { stage: number }) {
+function VerifyingView({ stage, plot }: { stage: number; plot: Plot }) {
+  const checks = [
+    {
+      title: "Plot Registered",
+      desc: `Polygon disimpan · ${decimalID(plot.area)} ha`,
+    },
+    {
+      title: "Drone View Analysis",
+      desc:
+        plot.treeCount !== null && plot.treeCount !== undefined
+          ? `${plot.treeCount} pohon terdeteksi`
+          : "Menunggu hasil deteksi pohon",
+    },
+    {
+      title: "Land Classification",
+      desc: `${plot.landType} · ${plot.trees.join(", ")}`,
+    },
+    {
+      title: "Cross-Validation",
+      desc:
+        plot.treeCount !== null && plot.treeCount !== undefined
+          ? "Polygon dan citra cocok"
+          : "Polygon tersimpan untuk analisis ulang",
+    },
+    {
+      title: "Carbon Stock Estimation",
+      desc: `Estimasi ${decimalID(plot.carbonTons)} ton/tahun`,
+    },
+  ];
+
   return (
     <main className="web-page">
       <AppHeader active="plots" />
@@ -721,14 +764,48 @@ function VerifyingView({ stage }: { stage: number }) {
           </h1>
 
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-ink-500">
-            Satelit, foto, dan data lahan dipadankan untuk menghasilkan
-            estimasi carbon stock.
+            Data polygon, citra lahan, dan detail tanaman diproses untuk
+            menghasilkan estimasi awal.
           </p>
         </div>
 
-        <div className="mt-8">
-          <LiveProgress stage={Math.min(stage, 4)} />
-        </div>
+        <Card className="mt-8 rounded-2xl p-6">
+          <div className="space-y-5">
+            {checks.map((item, index) => {
+              const done = index < stage;
+              const active = index === stage;
+
+              return (
+                <div key={item.title} className="flex gap-4">
+                  <div
+                    className={`mt-0.5 grid h-8 w-8 flex-none place-items-center rounded-full ${
+                      done
+                        ? "bg-green-100 text-green-700"
+                        : active
+                          ? "bg-green-700 text-white"
+                          : "bg-ink-100 text-ink-400"
+                    }`}
+                  >
+                    {done ? "✓" : active ? "•" : index + 1}
+                  </div>
+
+                  <div>
+                    <div
+                      className={`font-semibold ${
+                        active ? "text-green-800" : "text-ink-900"
+                      }`}
+                    >
+                      {item.title}
+                    </div>
+                    <div className="mt-1 text-sm text-ink-500">
+                      {item.desc}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
 
         <Card className="mt-6 rounded-2xl">
           <div className="eyebrow">Proyeksi awal</div>
@@ -736,13 +813,15 @@ function VerifyingView({ stage }: { stage: number }) {
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div>
               <div className="text-sm text-ink-500">Carbon</div>
-              <div className="figure text-4xl font-medium">18,4 ton</div>
+              <div className="figure text-4xl font-medium">
+                {decimalID(plot.carbonTons)} ton
+              </div>
             </div>
 
             <div>
               <div className="text-sm text-ink-500">Pendapatan</div>
               <div className="figure text-4xl font-medium">
-                {formatIDR(1288000)}
+                {formatIDR(plot.annualEarnings)}
               </div>
             </div>
           </div>

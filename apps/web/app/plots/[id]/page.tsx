@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
-  Leaf,
   Satellite,
   Sprout,
   TrendingUp,
@@ -19,6 +18,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { MapPolygon } from "@/components/plots/MapPolygon";
 import { decimalID, formatIDR, formatIDRShort } from "@/lib/format";
 import { getPlotById } from "@/lib/plots-store";
+import { detectTreesFromFixedImage } from "@/lib/api-detection";
 import type { Plot } from "@/lib/types";
 
 export default function PlotDetailPage() {
@@ -28,10 +28,53 @@ export default function PlotDetailPage() {
   const [plot, setPlot] = useState<Plot | null>(null);
   const [loaded, setLoaded] = useState(false);
 
+  const [annotatedImage, setAnnotatedImage] = useState<string | null>(null);
+  const [detectedTreeCount, setDetectedTreeCount] = useState<number | null>(
+    null
+  );
+  const [detecting, setDetecting] = useState(false);
+  const [detectError, setDetectError] = useState<string | null>(null);
+
   useEffect(() => {
     setPlot(getPlotById(params.id));
     setLoaded(true);
   }, [params.id]);
+
+  useEffect(() => {
+    if (!plot?.polygonPoints || plot.polygonPoints.length < 3) return;
+
+    let ignore = false;
+
+    async function rerunDetection() {
+      try {
+        setDetecting(true);
+        setDetectError(null);
+
+        const result = await detectTreesFromFixedImage(plot!.polygonPoints!);
+
+        if (ignore) return;
+
+        setDetectedTreeCount(result.tree_count);
+        setAnnotatedImage(result.annotated_image_base64);
+      } catch (error) {
+        if (ignore) return;
+
+        setDetectError(
+          error instanceof Error ? error.message : "Gagal menjalankan deteksi."
+        );
+      } finally {
+        if (!ignore) {
+          setDetecting(false);
+        }
+      }
+    }
+
+    rerunDetection();
+
+    return () => {
+      ignore = true;
+    };
+  }, [plot?.id, plot?.polygonPoints]);
 
   if (!loaded) {
     return (
@@ -66,6 +109,13 @@ export default function PlotDetailPage() {
       </main>
     );
   }
+
+  const shownTreeCount =
+    detectedTreeCount !== null
+      ? detectedTreeCount
+      : plot.treeCount !== null && plot.treeCount !== undefined
+        ? plot.treeCount
+        : null;
 
   return (
     <main className="web-page">
@@ -103,17 +153,33 @@ export default function PlotDetailPage() {
                 Tarik pendapatan
               </Button>
             </Link>
-
-            {/* <Button variant="secondary" leftIcon={<Leaf className="h-4 w-4" />}>
-              Sertifikat
-            </Button> */}
           </div>
         </div>
 
         <div className="dashboard-grid">
           <div className="space-y-5">
             <Card className="rounded-[24px] p-4">
-              <MapPolygon polygon={plot.polygon} height={420} ndvi />
+              {annotatedImage ? (
+                <div className="overflow-hidden rounded-2xl border border-[rgba(15,23,42,.08)] bg-ink-50">
+                  <img
+                    src={`data:image/png;base64,${annotatedImage}`}
+                    alt="Hasil deteksi pohon"
+                    className="h-[420px] w-full object-cover"
+                  />
+                </div>
+              ) : detecting ? (
+                <div className="grid h-[420px] place-items-center rounded-2xl bg-green-50 text-center text-sm font-semibold text-green-700">
+                  Mendeteksi pohon dari polygon tersimpan...
+                </div>
+              ) : (
+                <MapPolygon polygon={plot.polygon} height={420} ndvi />
+              )}
+
+              {detectError && (
+                <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm leading-6 text-red-700">
+                  {detectError}
+                </div>
+              )}
             </Card>
 
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -142,11 +208,18 @@ export default function PlotDetailPage() {
                 />
                 <InfoBox label="Pohon dominan" value={plot.trees.join(", ")} />
                 <InfoBox label="Confidence" value={`${plot.confidence}%`} />
-                <InfoBox label="Jenis lahan" value={plot.landType} />
+
                 <InfoBox
-                  label="Metode"
-                  value="Sentinel-2 + foto + IPCC Tier 1"
+                  label="Pohon terdeteksi"
+                  value={
+                    shownTreeCount !== null
+                      ? `${shownTreeCount} pohon`
+                      : "Belum dideteksi"
+                  }
                 />
+
+                <InfoBox label="Jenis lahan" value={plot.landType} />
+                <InfoBox label="Metode" value="DeepForest + polygon lahan" />
               </div>
             </Card>
           </div>

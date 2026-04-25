@@ -57,4 +57,6 @@ export type Plot = {
   trees: string[];
   polygon: string;
   owner: string;
+  polygonPoints?: PolygonPoint[];
+  treeCount?: number | null;
 };
