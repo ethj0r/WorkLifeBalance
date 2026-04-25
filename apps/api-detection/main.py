@@ -89,7 +89,7 @@ async def detect_trees(
     try:
         predictions = model.predict_tile(
             path=temp_path,
-            patch_size=250,
+            patch_size=400,
             patch_overlap=0.25
         )
     except Exception as e:
@@ -193,12 +193,6 @@ async def detect_trees(
     annotated_base64 = base64.b64encode(buffer).decode("utf-8")
 
     return {
-        "image_width": img_bgr.shape[1],
-        "image_height": img_bgr.shape[0],
-        "polygon": polygon_points.tolist(),
-        "raw_prediction_count": 0 if predictions is None else len(predictions),
         "tree_count": len(tree_centroids),
-        "centroids": tree_centroids,
-        "boxes": tree_boxes,
         "annotated_image_base64": annotated_base64
     }
