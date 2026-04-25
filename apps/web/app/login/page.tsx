@@ -6,10 +6,18 @@ import { Button } from "@/components/ui/Button";
 import { Field, PhoneField } from "@/components/ui/Field";
 import { PublicHeader } from "@/components/ui/AppHeader";
 import { Card } from "@/components/ui/Card";
+import { setPendingPhone } from "@/lib/session";
 
 export default function LoginPage() {
   const [phone, setPhone] = useState("812 3456 7890");
   const router = useRouter();
+
+  function handleSend() {
+    const normalised = phone.trim();
+    setPendingPhone(normalised);
+    router.push(`/otp?phone=${encodeURIComponent(normalised)}`);
+  }
+
   return (
     <main className="web-page">
       <PublicHeader />
@@ -27,9 +35,16 @@ export default function LoginPage() {
         <Card className="auth-card">
           <h2 className="display-sm">Masuk dengan nomor HP</h2>
           <p className="mt-2 text-sm leading-6 text-ink-500">Kami akan kirim kode OTP via WhatsApp untuk verifikasi.</p>
-          <div className="mt-8"><Field label="Nomor HP" hint="Pastikan nomor aktif untuk menerima OTP"><PhoneField value={phone} onChange={setPhone} /></Field></div>
-          <Button fullWidth size="lg" className="mt-6" onClick={() => router.push(`/otp?phone=${encodeURIComponent(phone)}`)}>Kirim Kode OTP</Button>
-          <div className="mt-5 flex gap-2 rounded-lg bg-earth-50 p-3 text-xs text-earth-700"><Info className="h-4 w-4 flex-none" /> <span>Demo: kode OTP adalah <b>123456</b></span></div>
+          <div className="mt-8">
+            <Field label="Nomor HP" hint="Pastikan nomor aktif untuk menerima OTP">
+              <PhoneField value={phone} onChange={setPhone} />
+            </Field>
+          </div>
+          <Button fullWidth size="lg" className="mt-6" onClick={handleSend}>Kirim Kode OTP</Button>
+          <div className="mt-5 flex gap-2 rounded-lg bg-earth-50 p-3 text-xs text-earth-700">
+            <Info className="h-4 w-4 flex-none" />
+            <span>Demo: kode OTP adalah <b>123456</b></span>
+          </div>
         </Card>
       </section>
     </main>
@@ -37,5 +52,9 @@ export default function LoginPage() {
 }
 
 function Feature({ icon, title }: { icon: ReactNode; title: string }) {
-  return <div className="flex items-center gap-2 rounded-2xl border border-[rgba(15,23,42,.08)] bg-white/70 p-4 text-sm font-semibold text-ink-700"><span className="text-green-700">{icon}</span>{title}</div>;
+  return (
+    <div className="flex items-center gap-2 rounded-2xl border border-[rgba(15,23,42,.08)] bg-white/70 p-4 text-sm font-semibold text-ink-700">
+      <span className="text-green-700">{icon}</span>{title}
+    </div>
+  );
 }

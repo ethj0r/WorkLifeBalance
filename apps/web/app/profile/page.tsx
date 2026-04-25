@@ -5,12 +5,50 @@ import { Card } from "@/components/ui/Card";
 import { Field, TextInput } from "@/components/ui/Field";
 import { PublicHeader } from "@/components/ui/AppHeader";
 import { useState } from "react";
+import { updateProfile, supabaseAvailable } from "@/lib/supabase/client";
+import {
+  getSession,
+  setSession,
+  updateSessionProfile,
+  DEMO_USER,
+} from "@/lib/session";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [name, setName] = useState("Pak Asep");
-  const [province, setProvince] = useState("Jawa Barat");
-  const [regency, setRegency] = useState("Cianjur");
+
+  const session = getSession();
+  const [name, setName] = useState(session?.display_name || DEMO_USER.display_name);
+  const [province, setProvince] = useState(session?.province || DEMO_USER.province);
+  const [regency, setRegency] = useState(session?.regency || DEMO_USER.regency);
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave() {
+    if (saving) return;
+    setSaving(true);
+
+    const patch = {
+      display_name: name.trim() || DEMO_USER.display_name,
+      province: province.trim() || DEMO_USER.province,
+      regency: regency.trim() || DEMO_USER.regency,
+    };
+
+    try {
+      if (supabaseAvailable && session && session.id !== "demo") {
+        await updateProfile(session.id, patch);
+      }
+
+      if (session) {
+        updateSessionProfile(patch);
+      } else {
+        setSession({ ...DEMO_USER, ...patch });
+      }
+
+      router.push("/dashboard");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <main className="web-page">
       <PublicHeader />
@@ -24,13 +62,21 @@ export default function ProfilePage() {
           <h2 className="display-sm">Halo! Cerita sedikit tentang Anda.</h2>
           <p className="mt-2 text-sm leading-6 text-ink-500">Data dasar saja — detail lain ditanya nanti saat daftarkan lahan.</p>
           <div className="mt-8 grid gap-4">
-            <Field label="Nama panggilan"><TextInput value={name} onChange={(e) => setName(e.target.value)} /></Field>
+            <Field label="Nama panggilan">
+              <TextInput value={name} onChange={(e) => setName(e.target.value)} />
+            </Field>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Provinsi"><TextInput value={province} onChange={(e) => setProvince(e.target.value)} /></Field>
-              <Field label="Kabupaten / Kota"><TextInput value={regency} onChange={(e) => setRegency(e.target.value)} /></Field>
+              <Field label="Provinsi">
+                <TextInput value={province} onChange={(e) => setProvince(e.target.value)} />
+              </Field>
+              <Field label="Kabupaten / Kota">
+                <TextInput value={regency} onChange={(e) => setRegency(e.target.value)} />
+              </Field>
             </div>
           </div>
-          <Button fullWidth size="lg" className="mt-8" onClick={() => router.push("/dashboard")}>Mulai Pakai CarbonLink</Button>
+          <Button fullWidth size="lg" className="mt-8" loading={saving} onClick={handleSave}>
+            Mulai Pakai CarbonLink
+          </Button>
         </Card>
       </section>
     </main>

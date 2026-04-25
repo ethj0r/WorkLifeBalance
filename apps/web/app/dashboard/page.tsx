@@ -10,15 +10,26 @@ import { Card } from "@/components/ui/Card";
 import { PlotCard } from "@/components/plots/PlotCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { formatIDR, formatIDRShort, decimalID } from "@/lib/format";
-import { user } from "@/lib/mock-data";
+import { getSessionOrDemo } from "@/lib/session";
+import { user as mockUser } from "@/lib/mock-data";
 import { getPlots } from "@/lib/plots-store";
 import type { Plot } from "@/lib/types";
 
 export default function DashboardPage() {
   const [dashboardPlots, setDashboardPlots] = useState<Plot[]>([]);
+  const [sessionUser, setSessionUser] = useState(mockUser);
 
   useEffect(() => {
     setDashboardPlots(getPlots());
+    const s = getSessionOrDemo();
+    setSessionUser({
+      name: s.display_name || mockUser.name,
+      fullName: s.display_name || mockUser.fullName,
+      phone: s.phone || mockUser.phone,
+      province: s.province || mockUser.province,
+      regency: s.regency || mockUser.regency,
+      balance: s.balance ?? mockUser.balance,
+    });
   }, []);
 
   const totalArea = useMemo(
@@ -53,7 +64,7 @@ export default function DashboardPage() {
         <div className="mb-8 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
           <div>
             <div className="text-sm text-ink-500">Halo,</div>
-            <h1 className="display-md">{user.name}</h1>
+            <h1 className="display-md">{sessionUser.name}</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-600">
               Pantau lahan, status verifikasi MRV, estimasi carbon credit, dan
               saldo yang siap ditarik.
@@ -77,7 +88,7 @@ export default function DashboardPage() {
                       Saldo tersedia
                     </div>
                     <div className="figure mt-2 text-5xl font-medium leading-none md:text-6xl">
-                      {formatIDR(user.balance)}
+                      {formatIDR(sessionUser.balance)}
                     </div>
                     <div className="mt-2 text-sm text-green-50/70">
                       Estimasi tahunan seluruh lahan:{" "}

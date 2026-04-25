@@ -1,12 +1,23 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Logo } from "./Logo";
 import { Button } from "./Button";
+import { getSessionOrDemo } from "@/lib/session";
 
 export function AppHeader({
   active,
 }: {
   active?: "dashboard" | "plots" | "withdraw";
 }) {
+  const [displayName, setDisplayName] = useState<string>("");
+
+  useEffect(() => {
+    const s = getSessionOrDemo();
+    setDisplayName(s.display_name || "");
+  }, []);
+
   const nav = [
     { href: "/dashboard", label: "Dashboard", key: "dashboard" },
     { href: "/plots/new", label: "Daftarkan lahan", key: "plots" },
@@ -38,6 +49,18 @@ export function AppHeader({
             </Link>
           ))}
         </nav>
+
+        {/* User chip — only renders when name is available */}
+        {displayName && (
+          <div className="absolute right-6 hidden items-center gap-2 sm:right-8 lg:right-10 md:flex">
+            <div className="flex items-center gap-2 rounded-full border border-[rgba(15,23,42,.08)] bg-white px-3 py-1.5 text-sm font-semibold text-ink-700 shadow-xs">
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-green-700 text-[11px] font-bold text-white">
+                {displayName.charAt(0).toUpperCase()}
+              </span>
+              {displayName}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
