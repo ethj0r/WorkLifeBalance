@@ -1,4 +1,13 @@
-export type PlotStatus = "pending" | "verifying" | "verified" | "credit_issued";
+export type PlotStatus =
+  | "pending"
+  | "verifying"
+  | "verified"
+  | "credit_issued";
+
+export type PolygonPoint = {
+  x: number;
+  y: number;
+};
 
 export type Plot = {
   id: string;

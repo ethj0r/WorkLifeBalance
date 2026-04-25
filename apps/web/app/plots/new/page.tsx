@@ -1,48 +1,131 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, CheckCircle2, CircleCheck, FileText, Info, MapPin, Pencil, ShieldCheck, Trash2, Undo2, Users, User } from "lucide-react";
+import {
+  Camera,
+  CircleCheck,
+  FileText,
+  Info,
+  MapPin,
+  ShieldCheck,
+  Users,
+  User,
+} from "lucide-react";
+
+import { PolygonEditor } from "@/components/maps/PolygonEditor";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Field, SelectInput, TextInput } from "@/components/ui/Field";
-import { MapPolygon } from "@/components/plots/MapPolygon";
 import { WizardStepper } from "@/components/wizard/WizardStepper";
 import { LiveProgress } from "@/components/wizard/LiveProgress";
+import { estimateAreaHaFromSvgPolygon } from "@/lib/geo";
 import { formatIDR } from "@/lib/format";
+import type { PolygonPoint } from "@/lib/types";
 
-const labels = ["Kepemilikan", "Data diri", "Lokasi", "Polygon", "Detail", "Foto", "Review"];
-type Form = { ownership: "self" | "on_behalf" | null; name: string; address: string; landType: string; year: string; trees: string[]; consent: boolean; };
+const labels = [
+  "Kepemilikan",
+  "Data diri",
+  "Lokasi",
+  "Polygon",
+  "Detail",
+  "Foto",
+  "Review",
+];
+
+type Form = {
+  ownership: "self" | "on_behalf" | null;
+  name: string;
+  address: string;
+  landType: string;
+  year: string;
+  trees: string[];
+  consent: boolean;
+  polygonPoints: PolygonPoint[];
+};
+
+const initialPolygonPoints: PolygonPoint[] = [
+  { x: 90, y: 130 },
+  { x: 310, y: 90 },
+  { x: 560, y: 150 },
+  { x: 670, y: 330 },
+  { x: 380, y: 430 },
+  { x: 120, y: 330 },
+];
 
 export default function NewPlotPage() {
   const router = useRouter();
+
   const [step, setStep] = useState(0);
   const [verifying, setVerifying] = useState(false);
   const [stage, setStage] = useState(0);
-  const [form, setForm] = useState<Form>({ ownership: null, name: "Kebun Cengkeh Bukit Hijau", address: "Desa Sukamulya, Cianjur", landType: "Agroforestri", year: "2008", trees: ["Cengkeh", "Kopi", "Sengon"], consent: false });
+
+  const [form, setForm] = useState<Form>({
+    ownership: null,
+    name: "Kebun Cengkeh Bukit Hijau",
+    address: "Desa Sukamulya, Cianjur",
+    landType: "Agroforestri",
+    year: "2008",
+    trees: ["Cengkeh", "Kopi", "Sengon"],
+    consent: false,
+    polygonPoints: initialPolygonPoints,
+  });
 
   useEffect(() => {
     if (!verifying) return;
-    const t = setInterval(() => setStage((s) => Math.min(5, s + 1)), 1400);
+
+    const t = setInterval(() => {
+      setStage((s) => Math.min(5, s + 1));
+    }, 1400);
+
     return () => clearInterval(t);
   }, [verifying]);
-  useEffect(() => { if (verifying && stage >= 5) setTimeout(() => router.push("/plots/plot-2?new=1"), 700); }, [stage, verifying, router]);
 
-  const next = () => step < labels.length - 1 ? setStep(step + 1) : setVerifying(true);
-  const back = () => step === 0 ? router.push("/dashboard") : setStep(step - 1);
+  useEffect(() => {
+    if (verifying && stage >= 5) {
+      setTimeout(() => router.push("/plots/plot-2?new=1"), 700);
+    }
+  }, [stage, verifying, router]);
+
+  const next = () => {
+    if (step < labels.length - 1) {
+      setStep(step + 1);
+      return;
+    }
+
+    setVerifying(true);
+  };
+
+  const back = () => {
+    if (step === 0) {
+      router.push("/dashboard");
+      return;
+    }
+
+    setStep(step - 1);
+  };
+
   if (verifying) return <VerifyingView stage={stage} />;
 
   return (
     <main className="web-page">
       <AppHeader active="plots" />
+
       <section className="web-container py-8 lg:py-10">
         <div className="mb-8 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
           <div>
             <div className="eyebrow text-green-700">Form MRV Pengguna</div>
             <h1 className="display-md mt-2">Daftarkan Lahan</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-600">Lengkapi data lahan, polygon, foto bukti, dan detail tanaman untuk verifikasi otomatis.</p>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-600">
+              Lengkapi data lahan, polygon, foto bukti, dan detail tanaman
+              untuk verifikasi otomatis.
+            </p>
           </div>
-          <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink-600 shadow-xs">Langkah {step + 1} dari {labels.length}</div>
+
+          <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink-600 shadow-xs">
+            Langkah {step + 1} dari {labels.length}
+          </div>
         </div>
 
         <div className="wizard-grid">
@@ -50,24 +133,59 @@ export default function NewPlotPage() {
             <Card className="rounded-2xl p-5">
               <WizardStepper step={step} labels={labels} vertical />
             </Card>
+
             <Card className="mt-4 rounded-2xl bg-green-50 p-5">
-              <div className="flex items-center gap-2 text-green-700"><ShieldCheck className="h-5 w-5" /><span className="font-semibold">Trust score naik</span></div>
-              <p className="mt-2 text-sm leading-6 text-green-900/75">Dokumen legal, foto jelas, dan polygon rapi membantu buyer menilai credit lebih berkualitas.</p>
+              <div className="flex items-center gap-2 text-green-700">
+                <ShieldCheck className="h-5 w-5" />
+                <span className="font-semibold">Trust score naik</span>
+              </div>
+
+              <p className="mt-2 text-sm leading-6 text-green-900/75">
+                Dokumen legal, foto jelas, dan polygon rapi membantu buyer
+                menilai credit lebih berkualitas.
+              </p>
             </Card>
           </aside>
 
           <Card className="rounded-[24px] p-6 md:p-8">
-            <div className="mb-6 lg:hidden"><WizardStepper step={step} labels={labels} /></div>
+            <div className="mb-6 lg:hidden">
+              <WizardStepper step={step} labels={labels} />
+            </div>
+
             <div className="min-h-[520px]">
-              {step === 0 && <StepOwnership onPick={(v) => { setForm({ ...form, ownership: v }); setStep(1); }} />}
+              {step === 0 && (
+                <StepOwnership
+                  onPick={(v) => {
+                    setForm({ ...form, ownership: v });
+                    setStep(1);
+                  }}
+                />
+              )}
+
               {step === 1 && <StepSelf />}
+
               {step === 2 && <StepLocation form={form} setForm={setForm} />}
-              {step === 3 && <StepPolygon />}
+
+              {step === 3 && <StepPolygon form={form} setForm={setForm} />}
+
               {step === 4 && <StepDetail form={form} setForm={setForm} />}
+
               {step === 5 && <StepPhotos />}
+
               {step === 6 && <StepReview form={form} setForm={setForm} />}
             </div>
-            {step > 0 && <div className="mt-8 flex justify-between gap-3 border-t border-[rgba(15,23,42,.08)] pt-5"><Button variant="secondary" onClick={back}>Kembali</Button><Button onClick={next}>{step === labels.length - 1 ? "Daftarkan Lahan" : "Lanjut"}</Button></div>}
+
+            {step > 0 && (
+              <div className="mt-8 flex justify-between gap-3 border-t border-[rgba(15,23,42,.08)] pt-5">
+                <Button variant="secondary" onClick={back}>
+                  Kembali
+                </Button>
+
+                <Button onClick={next}>
+                  {step === labels.length - 1 ? "Daftarkan Lahan" : "Lanjut"}
+                </Button>
+              </div>
+            )}
           </Card>
         </div>
       </section>
@@ -75,17 +193,417 @@ export default function NewPlotPage() {
   );
 }
 
-function StepOwnership({ onPick }: { onPick: (v: "self" | "on_behalf") => void }) {
+function StepOwnership({
+  onPick,
+}: {
+  onPick: (v: "self" | "on_behalf") => void;
+}) {
   const opts = [
-    { value: "self" as const, title: "Lahan saya sendiri", desc: "Saya pemilik legal lahan ini", icon: User },
-    { value: "on_behalf" as const, title: "Lahan orang lain", desc: "Kerabat, anggota koperasi, atau kelompok tani", icon: Users },
+    {
+      value: "self" as const,
+      title: "Lahan saya sendiri",
+      desc: "Saya pemilik legal lahan ini",
+      icon: User,
+    },
+    {
+      value: "on_behalf" as const,
+      title: "Lahan orang lain",
+      desc: "Kerabat, anggota koperasi, atau kelompok tani",
+      icon: Users,
+    },
   ];
-  return <div><h2 className="display-sm">Lahan ini milik siapa?</h2><p className="mt-2 text-sm leading-6 text-ink-500">Pilih agar sistem meminta data legal yang sesuai.</p><div className="mt-6 grid gap-4 md:grid-cols-2">{opts.map(({ value, title, desc, icon: Icon }) => <button key={value} onClick={() => onPick(value)} className="rounded-2xl border border-ink-200 bg-white p-6 text-left transition hover:-translate-y-0.5 hover:border-green-600 hover:bg-green-50 hover:shadow-md"><div className="grid h-12 w-12 place-items-center rounded-full bg-green-100 text-green-700"><Icon className="h-6 w-6" /></div><div className="mt-5 text-lg font-semibold">{title}</div><div className="mt-1 text-sm leading-6 text-ink-500">{desc}</div></button>)}</div></div>;
+
+  return (
+    <div>
+      <h2 className="display-sm">Lahan ini milik siapa?</h2>
+      <p className="mt-2 text-sm leading-6 text-ink-500">
+        Pilih agar sistem meminta data legal yang sesuai.
+      </p>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        {opts.map(({ value, title, desc, icon: Icon }) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => onPick(value)}
+            className="rounded-2xl border border-ink-200 bg-white p-6 text-left transition hover:-translate-y-0.5 hover:border-green-600 hover:bg-green-50 hover:shadow-md"
+          >
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-green-100 text-green-700">
+              <Icon className="h-6 w-6" />
+            </div>
+
+            <div className="mt-5 text-lg font-semibold">{title}</div>
+            <div className="mt-1 text-sm leading-6 text-ink-500">{desc}</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
-function StepSelf() { return <div><h2 className="display-sm">Data diri Anda</h2><p className="mt-2 text-sm leading-6 text-ink-500">Hanya diminta sekali untuk identitas penanggung jawab.</p><div className="mt-6 grid gap-4 md:grid-cols-2"><Field label="Nama lengkap"><TextInput defaultValue="Asep Suryadi" /></Field><Field label="NIK"><TextInput defaultValue="3201987654321098" /></Field><Field label="Foto KTP"><div className="rounded-xl border border-dashed border-green-400 bg-green-50 p-5 text-center"><CircleCheck className="mx-auto h-6 w-6 text-green-700" /><div className="mt-2 text-sm font-semibold text-green-700">KTP terupload — Verified</div></div></Field></div></div>; }
-function StepLocation({ form, setForm }: { form: Form; setForm: (f: Form) => void }) { return <div><h2 className="display-sm">Di mana lahannya?</h2><p className="mt-2 text-sm leading-6 text-ink-500">Ketik alamat atau pakai lokasi sekarang.</p><div className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]"><div className="space-y-4"><Field label="Nama lahan"><TextInput value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field><Field label="Alamat lahan"><TextInput value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></Field><Button variant="secondary" size="sm" leftIcon={<MapPin className="h-4 w-4" />}>Gunakan Lokasi Saya</Button></div><div className="relative h-[360px] overflow-hidden rounded-2xl border border-[rgba(15,23,42,.08)] bg-gradient-to-br from-green-400 via-green-200 to-green-50"><div className="absolute left-1/2 top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-full place-items-center rounded-full border-4 border-white bg-green-700 text-white shadow-md"><MapPin className="h-5 w-5" /></div></div></div></div>; }
-function StepPolygon() { return <div><h2 className="display-sm">Gambar batas lahan</h2><p className="mt-2 text-sm leading-6 text-ink-500">Tandai sudut lahan. Pada production, bagian ini bisa diganti Leaflet/Mapbox.</p><div className="mt-5 flex flex-col justify-between gap-3 rounded-xl border border-ink-200 bg-white p-3 sm:flex-row sm:items-center"><div className="flex gap-1">{[Pencil, Undo2, Trash2].map((Icon, i) => <button key={i} className="grid h-9 w-9 place-items-center rounded-lg text-ink-700 hover:bg-green-50"><Icon className="h-4 w-4" /></button>)}</div><div className="flex gap-4 text-sm"><span><b>1,8 ha</b> <span className="text-ink-500">luas</span></span><span><b>6</b> <span className="text-ink-500">vertex</span></span></div></div><div className="mt-4"><MapPolygon polygon="60,40 220,28 320,70 290,150 110,148 50,110" height={420} /></div><div className="mt-4 flex gap-2 rounded-lg bg-earth-50 p-3 text-sm text-earth-700"><Info className="h-4 w-4 flex-none" /> Tidak yakin batasnya? Pakai radius dari titik tengah lalu perbaiki nanti.</div></div>; }
-function StepDetail({ form, setForm }: { form: Form; setForm: (f: Form) => void }) { const treeOptions = ["Kopi", "Cengkeh", "Sengon", "Kakao", "Karet", "Jati", "Mahoni", "Durian", "Mangga", "Petai", "Kemiri", "Kelapa"]; return <div><h2 className="display-sm">Detail lahan</h2><p className="mt-2 text-sm leading-6 text-ink-500">Sedikit info untuk akurasi estimasi carbon stock.</p><div className="mt-6 grid gap-4 md:grid-cols-2"><Field label="Jenis lahan"><SelectInput value={form.landType} onChange={(e) => setForm({ ...form, landType: e.target.value })}><option>Agroforestri</option><option>Kebun Campur</option><option>Kebun Monokultur</option><option>Hutan Adat</option></SelectInput></Field><Field label="Tahun mulai dikelola"><TextInput value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} /></Field><Field label="Jenis pohon dominan" hint="Pilih satu atau lebih"><div className="flex flex-wrap gap-2">{treeOptions.map((t) => { const on = form.trees.includes(t); return <button key={t} onClick={() => setForm({ ...form, trees: on ? form.trees.filter((x) => x !== t) : [...form.trees, t] })} className={`rounded-full border px-3 py-1.5 text-sm font-semibold ${on ? "border-green-700 bg-green-700 text-green-50" : "border-ink-200 bg-white text-ink-700"}`}>{t}</button>; })}</div></Field><Field label="Estimasi jumlah pohon" hint="Tidak yakin? Lewati — sistem akan hitung dari foto"><TextInput placeholder="(opsional)" /></Field></div></div>; }
-function StepPhotos() { return <div><h2 className="display-sm">Foto bukti lahan</h2><p className="mt-2 text-sm leading-6 text-ink-500">Foto pohon dari berbagai sudut. Minimal 3 foto.</p><div className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]"><div className="space-y-4"><Field label="Dokumen legal (opsional)" hint="Sertifikat / SPPT meningkatkan trust score"><div className="rounded-xl border border-dashed border-ink-200 bg-white p-6 text-center"><FileText className="mx-auto h-6 w-6 text-ink-500" /><div className="mt-2 text-sm text-ink-500">Tap untuk upload</div></div></Field></div><Field label="Foto kondisi lahan" hint="3 foto terupload"><div className="grid grid-cols-4 gap-3">{[1,2,3].map((i) => <div key={i} className="aspect-square rounded-xl bg-gradient-to-br from-green-700 to-green-400 p-2 text-right"><span className="rounded bg-white/90 px-2 py-1 text-xs font-semibold text-green-700">✓ Foto {i}</span></div>)}<div className="grid aspect-square place-items-center rounded-xl border border-dashed border-ink-200 bg-white"><Camera className="h-6 w-6 text-ink-500" /></div></div></Field></div></div>; }
-function StepReview({ form, setForm }: { form: Form; setForm: (f: Form) => void }) { return <div><h2 className="display-sm">Review & konfirmasi</h2><p className="mt-2 text-sm leading-6 text-ink-500">Pastikan semua data benar sebelum daftarkan.</p><div className="mt-6 grid gap-4 lg:grid-cols-2"><Card><div className="eyebrow">Lahan</div><div className="mt-2 font-display text-2xl font-medium">{form.name}</div><div className="mt-1 text-sm text-ink-500">{form.address} · 1,8 ha · {form.landType}</div></Card><Card><div className="eyebrow">Pohon dominan</div><div className="mt-3 flex flex-wrap gap-2">{form.trees.map((t) => <span key={t} className="rounded-full bg-green-100 px-3 py-1.5 text-sm font-semibold text-green-700">{t}</span>)}</div></Card><label className="flex gap-3 rounded-xl border border-earth-200 bg-earth-50 p-4 text-sm leading-6 text-earth-700 lg:col-span-2"><input type="checkbox" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} /><span>Saya menyatakan data yang diberikan benar dan siap diverifikasi.</span></label></div></div>; }
-function VerifyingView({ stage }: { stage: number }) { return <main className="web-page"><AppHeader active="plots" /><section className="narrow-container py-12"><div className="text-center"><div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-green-100 text-green-700"><ShieldCheck className="h-10 w-10" /></div><h1 className="display-md mt-6">Kami sedang memeriksa lahanmu.</h1><p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-ink-500">Satelit, foto, dan data lahan dipadankan untuk menghasilkan estimasi carbon stock.</p></div><div className="mt-8"><LiveProgress stage={Math.min(stage, 4)} /></div><Card className="mt-6 rounded-2xl"><div className="eyebrow">Proyeksi awal</div><div className="mt-4 grid grid-cols-2 gap-3"><div><div className="text-sm text-ink-500">Carbon</div><div className="figure text-4xl font-medium">18,4 ton</div></div><div><div className="text-sm text-ink-500">Pendapatan</div><div className="figure text-4xl font-medium">{formatIDR(1288000)}</div></div></div></Card></section></main>; }
+
+function StepSelf() {
+  return (
+    <div>
+      <h2 className="display-sm">Data diri Anda</h2>
+      <p className="mt-2 text-sm leading-6 text-ink-500">
+        Hanya diminta sekali untuk identitas penanggung jawab.
+      </p>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <Field label="Nama lengkap">
+          <TextInput defaultValue="Asep Suryadi" />
+        </Field>
+
+        <Field label="NIK">
+          <TextInput defaultValue="3201987654321098" />
+        </Field>
+
+        <Field label="Foto KTP">
+          <div className="rounded-xl border border-dashed border-green-400 bg-green-50 p-5 text-center">
+            <CircleCheck className="mx-auto h-6 w-6 text-green-700" />
+            <div className="mt-2 text-sm font-semibold text-green-700">
+              KTP terupload — Verified
+            </div>
+          </div>
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function StepLocation({
+  form,
+  setForm,
+}: {
+  form: Form;
+  setForm: (f: Form) => void;
+}) {
+  return (
+    <div>
+      <h2 className="display-sm">Di mana lahannya?</h2>
+      <p className="mt-2 text-sm leading-6 text-ink-500">
+        Ketik alamat atau pakai lokasi sekarang.
+      </p>
+
+      <div className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
+        <div className="space-y-4">
+          <Field label="Nama lahan">
+            <TextInput
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </Field>
+
+          <Field label="Alamat lahan">
+            <TextInput
+              value={form.address}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+            />
+          </Field>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            leftIcon={<MapPin className="h-4 w-4" />}
+          >
+            Gunakan Lokasi Saya
+          </Button>
+        </div>
+
+        <div className="relative h-[360px] overflow-hidden rounded-2xl border border-[rgba(15,23,42,.08)] bg-gradient-to-br from-green-400 via-green-200 to-green-50">
+          <div className="absolute left-1/2 top-1/2 grid h-11 w-11 -translate-x-1/2 -translate-y-full place-items-center rounded-full border-4 border-white bg-green-700 text-white shadow-md">
+            <MapPin className="h-5 w-5" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StepPolygon({
+  form,
+  setForm,
+}: {
+  form: Form;
+  setForm: (f: Form) => void;
+}) {
+  return (
+    <div>
+      <h2 className="display-sm">Gambar batas lahan</h2>
+      <p className="mt-2 text-sm leading-6 text-ink-500">
+        Tandai sudut lahan. Klik area peta untuk menambah vertex, lalu drag
+        titik untuk merapikan batas.
+      </p>
+
+      <div className="mt-5">
+        <PolygonEditor
+          value={form.polygonPoints}
+          onChange={(polygonPoints) => setForm({ ...form, polygonPoints })}
+          height={480}
+        />
+      </div>
+
+      <div className="mt-4 flex gap-2 rounded-lg bg-earth-50 p-3 text-sm text-earth-700">
+        <Info className="h-4 w-4 flex-none" />
+        Tidak yakin batasnya? Buat estimasi dulu dari titik-titik utama, lalu
+        perbaiki nanti saat verifikasi lapangan.
+      </div>
+    </div>
+  );
+}
+
+function StepDetail({
+  form,
+  setForm,
+}: {
+  form: Form;
+  setForm: (f: Form) => void;
+}) {
+  const treeOptions = [
+    "Kopi",
+    "Cengkeh",
+    "Sengon",
+    "Kakao",
+    "Karet",
+    "Jati",
+    "Mahoni",
+    "Durian",
+    "Mangga",
+    "Petai",
+    "Kemiri",
+    "Kelapa",
+  ];
+
+  return (
+    <div>
+      <h2 className="display-sm">Detail lahan</h2>
+      <p className="mt-2 text-sm leading-6 text-ink-500">
+        Sedikit info untuk akurasi estimasi carbon stock.
+      </p>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <Field label="Jenis lahan">
+          <SelectInput
+            value={form.landType}
+            onChange={(e) => setForm({ ...form, landType: e.target.value })}
+          >
+            <option>Agroforestri</option>
+            <option>Kebun Campur</option>
+            <option>Kebun Monokultur</option>
+            <option>Hutan Adat</option>
+          </SelectInput>
+        </Field>
+
+        <Field label="Tahun mulai dikelola">
+          <TextInput
+            value={form.year}
+            onChange={(e) => setForm({ ...form, year: e.target.value })}
+          />
+        </Field>
+
+        <Field label="Jenis pohon dominan" hint="Pilih satu atau lebih">
+          <div className="flex flex-wrap gap-2">
+            {treeOptions.map((t) => {
+              const on = form.trees.includes(t);
+
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      trees: on
+                        ? form.trees.filter((x) => x !== t)
+                        : [...form.trees, t],
+                    })
+                  }
+                  className={`rounded-full border px-3 py-1.5 text-sm font-semibold ${
+                    on
+                      ? "border-green-700 bg-green-700 text-green-50"
+                      : "border-ink-200 bg-white text-ink-700"
+                  }`}
+                >
+                  {t}
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+
+        <Field
+          label="Estimasi jumlah pohon"
+          hint="Tidak yakin? Lewati — sistem akan hitung dari foto"
+        >
+          <TextInput placeholder="(opsional)" />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function StepPhotos() {
+  return (
+    <div>
+      <h2 className="display-sm">Foto bukti lahan</h2>
+      <p className="mt-2 text-sm leading-6 text-ink-500">
+        Foto pohon dari berbagai sudut. Minimal 3 foto.
+      </p>
+
+      <div className="mt-6 grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
+        <div className="space-y-4">
+          <Field
+            label="Dokumen legal (opsional)"
+            hint="Sertifikat / SPPT meningkatkan trust score"
+          >
+            <div className="rounded-xl border border-dashed border-ink-200 bg-white p-6 text-center">
+              <FileText className="mx-auto h-6 w-6 text-ink-500" />
+              <div className="mt-2 text-sm text-ink-500">
+                Tap untuk upload
+              </div>
+            </div>
+          </Field>
+        </div>
+
+        <Field label="Foto kondisi lahan" hint="3 foto terupload">
+          <div className="grid grid-cols-4 gap-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="aspect-square rounded-xl bg-gradient-to-br from-green-700 to-green-400 p-2 text-right"
+              >
+                <span className="rounded bg-white/90 px-2 py-1 text-xs font-semibold text-green-700">
+                  ✓ Foto {i}
+                </span>
+              </div>
+            ))}
+
+            <div className="grid aspect-square place-items-center rounded-xl border border-dashed border-ink-200 bg-white">
+              <Camera className="h-6 w-6 text-ink-500" />
+            </div>
+          </div>
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function StepReview({
+  form,
+  setForm,
+}: {
+  form: Form;
+  setForm: (f: Form) => void;
+}) {
+  const areaHa = useMemo(
+    () => estimateAreaHaFromSvgPolygon(form.polygonPoints),
+    [form.polygonPoints]
+  );
+
+  const polygonStatus =
+    form.polygonPoints.length >= 3
+      ? `${form.polygonPoints.length} vertex · polygon valid`
+      : `${form.polygonPoints.length} vertex · belum valid`;
+
+  return (
+    <div>
+      <h2 className="display-sm">Review & konfirmasi</h2>
+      <p className="mt-2 text-sm leading-6 text-ink-500">
+        Pastikan semua data benar sebelum daftarkan.
+      </p>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <Card>
+          <div className="eyebrow">Lahan</div>
+          <div className="mt-2 font-display text-2xl font-medium">
+            {form.name}
+          </div>
+          <div className="mt-1 text-sm text-ink-500">
+            {form.address} · {areaHa.toLocaleString("id-ID")} ha ·{" "}
+            {form.landType}
+          </div>
+        </Card>
+
+        <Card>
+          <div className="eyebrow">Polygon</div>
+          <div className="mt-2 font-display text-2xl font-medium">
+            {areaHa.toLocaleString("id-ID")} ha
+          </div>
+          <div className="mt-1 text-sm text-ink-500">{polygonStatus}</div>
+        </Card>
+
+        <Card>
+          <div className="eyebrow">Pohon dominan</div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {form.trees.map((t) => (
+              <span
+                key={t}
+                className="rounded-full bg-green-100 px-3 py-1.5 text-sm font-semibold text-green-700"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        </Card>
+
+        <label className="flex gap-3 rounded-xl border border-earth-200 bg-earth-50 p-4 text-sm leading-6 text-earth-700 lg:col-span-2">
+          <input
+            type="checkbox"
+            checked={form.consent}
+            onChange={(e) => setForm({ ...form, consent: e.target.checked })}
+          />
+          <span>
+            Saya menyatakan data yang diberikan benar dan siap diverifikasi.
+          </span>
+        </label>
+      </div>
+    </div>
+  );
+}
+
+function VerifyingView({ stage }: { stage: number }) {
+  return (
+    <main className="web-page">
+      <AppHeader active="plots" />
+
+      <section className="narrow-container py-12">
+        <div className="text-center">
+          <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-green-100 text-green-700">
+            <ShieldCheck className="h-10 w-10" />
+          </div>
+
+          <h1 className="display-md mt-6">
+            Kami sedang memeriksa lahanmu.
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-ink-500">
+            Satelit, foto, dan data lahan dipadankan untuk menghasilkan
+            estimasi carbon stock.
+          </p>
+        </div>
+
+        <div className="mt-8">
+          <LiveProgress stage={Math.min(stage, 4)} />
+        </div>
+
+        <Card className="mt-6 rounded-2xl">
+          <div className="eyebrow">Proyeksi awal</div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div>
+              <div className="text-sm text-ink-500">Carbon</div>
+              <div className="figure text-4xl font-medium">18,4 ton</div>
+            </div>
+
+            <div>
+              <div className="text-sm text-ink-500">Pendapatan</div>
+              <div className="figure text-4xl font-medium">
+                {formatIDR(1288000)}
+              </div>
+            </div>
+          </div>
+        </Card>
+      </section>
+    </main>
+  );
+}
