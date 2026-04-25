@@ -17,39 +17,55 @@ import { Step_Detail } from '@/components/wizard/Step_Detail';
 import { Step_Photos } from '@/components/wizard/Step_Photos';
 import { Step_Review } from '@/components/wizard/Step_Review';
 import { submitPlotAction } from './actions';
+import type { AddLahanFormState } from '@karbonkredit/types';
 
 export default function WizardPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Submit handler — akan di-wire ke Server Action di Turn berikutnya
-    const handleComplete = async () => {
-        setSubmitting(true);
-        try {
-            const result = await submitPlotAction(form);
-            if (result.success && result.plotId) {
-            router.push(`/verify/${result.plotId}`);
-            } else {
-            alert(result.error || 'Gagal submit. Coba lagi.');
-            setSubmitting(false);
-            }
-        } catch (err) {
-            console.error(err);
-            setSubmitting(false);
-        }
-    };
+  // Submit handler — dipanggil dari WizardShell, butuh access ke `form`
+  const handleComplete = async (form: AddLahanFormState) => {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const result = await submitPlotAction(form);
+      if (result.success && result.plotId) {
+        router.push(`/verify/${result.plotId}`);
+      } else {
+        setSubmitError(result.error || 'Gagal submit. Coba lagi.');
+        setSubmitting(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setSubmitError(
+        err instanceof Error ? err.message : 'Terjadi kesalahan tak terduga'
+      );
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <WizardProvider onComplete={handleComplete}>
-      <WizardShell submitting={submitting} />
+    <WizardProvider onComplete={() => {}}>
+      <WizardShell
+        submitting={submitting}
+        submitError={submitError}
+        onSubmit={handleComplete}
+      />
     </WizardProvider>
   );
 }
 
 // ─────────────────────────────────────────────────────────────
-// Inner shell — menggunakan useWizard()
+// Inner shell — punya akses ke useWizard() context
 // ─────────────────────────────────────────────────────────────
-function WizardShell({ submitting, setSubmitting }: { submitting: boolean; setSubmitting: (s: boolean) => void }) {
+interface WizardShellProps {
+  submitting: boolean;
+  submitError: string | null;
+  onSubmit: (form: AddLahanFormState) => void;
+}
+
+function WizardShell({ submitting, submitError, onSubmit }: WizardShellProps) {
   const router = useRouter();
   const {
     form,
@@ -71,32 +87,15 @@ function WizardShell({ submitting, setSubmitting }: { submitting: boolean; setSu
     }
   };
 
-  const canProceed = isStepValid(currentStep);
-
-    const handleSubmit = async () => {
-    setSubmitting(true);
-    try {
-      const result = await submitPlotAction(form);
-      if (result.success && result.plotId) {
-        router.push(`/verify/${result.plotId}`);
-      } else {
-        alert(result.error || 'Gagal submit. Coba lagi.');
-        setSubmitting(false);
-      }
-    } catch (err) {
-      console.error(err);
-      setSubmitting(false);
-    }
-  };
-
-  // Ganti `next` di tombol Lanjut menjadi `handleSubmit` kalau isLastStep:
   const handleNext = () => {
     if (isLastStep) {
-      handleSubmit();
+      onSubmit(form);
     } else {
       next();
     }
   };
+
+  const canProceed = isStepValid(currentStep);
 
   return (
     <div className="flex flex-col min-h-screen bg-paper">
@@ -107,12 +106,24 @@ function WizardShell({ submitting, setSubmitting }: { submitting: boolean; setSu
         labels={steps.map((s) => s.label)}
       />
 
+      {/* Step body */}
+      <div className="flex-1 px-5 py-5 overflow-y-auto">
+        {currentStep === 'ownership' && <Step_Ownership />}
+        {currentStep === 'owner_data' && <Step_OwnerData />}
         {currentStep === 'self_data' && <Step_SelfData />}
         {currentStep === 'location' && <Step_Location />}
         {currentStep === 'polygon' && <Step_Polygon />}
         {currentStep === 'detail' && <Step_Detail />}
         {currentStep === 'photos' && <Step_Photos />}
         {currentStep === 'review' && <Step_Review />}
+
+        {/* Submit error */}
+        {submitError && (
+          <div className="mt-5 p-3.5 bg-danger-soft text-danger text-sm rounded-sm">
+            <b>Submit gagal:</b> {submitError}
+          </div>
+        )}
+      </div>
 
       {/* Bottom action bar — hanya muncul setelah step 0 (ownership) selected */}
       {step > 0 && (
@@ -134,17 +145,6 @@ function WizardShell({ submitting, setSubmitting }: { submitting: boolean; setSu
           </Button>
         </BottomBar>
       )}
-    </div>
-  );
-}
-
-// Placeholder untuk step yang belum diimplementasi
-function PlaceholderStep({ label }: { label: string }) {
-  return (
-    <div className="p-8 bg-white border border-dashed border-ink-300 rounded-md text-center">
-      <div className="text-3xl mb-3">🚧</div>
-      <div className="font-semibold text-ink-900 mb-1">Coming soon</div>
-      <div className="text-sm text-ink-500">{label}</div>
     </div>
   );
 }

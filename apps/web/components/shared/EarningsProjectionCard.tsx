@@ -58,6 +58,7 @@ export function EarningsProjectionCard({
               data={projection}
               margin={{ top: 5, right: 0, left: 0, bottom: 0 }}
             >
+              {/* defs adalah SVG element bawaan, tidak perlu di-import dari recharts */}
               <defs>
                 <linearGradient
                   id="areaGradient"
