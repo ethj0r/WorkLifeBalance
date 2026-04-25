@@ -1,0 +1,66 @@
+import type { Plot } from "./types";
+
+export const user = {
+  name: "Pak Asep",
+  fullName: "Asep Suryadi",
+  phone: "812 3456 7890",
+  province: "Jawa Barat",
+  regency: "Cianjur",
+  balance: 245000,
+};
+
+export const plots: Plot[] = [
+  {
+    id: "plot-1",
+    name: "Kebun Kopi Sumber Asih",
+    location: "Cianjur, Jawa Barat",
+    area: 2.4,
+    status: "credit_issued",
+    annualEarnings: 1680000,
+    carbonTons: 24.0,
+    confidence: 91,
+    ndvi: 0.72,
+    trees: ["Kopi", "Sengon", "Durian"],
+    polygon: "60,18 220,12 300,40 280,72 110,68 50,52",
+    owner: "Asep Suryadi",
+  },
+  {
+    id: "plot-2",
+    name: "Kebun Cengkeh Bukit Hijau",
+    location: "Sukamulya, Cianjur",
+    area: 1.8,
+    status: "verified",
+    annualEarnings: 1260000,
+    carbonTons: 18.0,
+    confidence: 87,
+    ndvi: 0.68,
+    trees: ["Cengkeh", "Kopi", "Sengon"],
+    polygon: "70,20 230,18 320,52 300,80 120,72 42,48",
+    owner: "Asep Suryadi",
+  },
+  {
+    id: "plot-3",
+    name: "Lahan Campur Lembah Padi",
+    location: "Garut, Jawa Barat",
+    area: 3.0,
+    status: "verifying",
+    annualEarnings: 2100000,
+    carbonTons: 30.0,
+    confidence: 82,
+    ndvi: 0.61,
+    trees: ["Kakao", "Mahoni", "Petai"],
+    polygon: "52,16 185,10 310,34 330,68 210,80 80,70",
+    owner: "Sukro Hadiman",
+  },
+];
+
+export const latestPlot = {
+  name: "Kebun Cengkeh Bukit Hijau",
+  location: "Desa Sukamulya, Cianjur",
+  area: 1.8,
+  carbonTons: 18.4,
+  annualEarnings: 1288000,
+  confidence: 89,
+  ndvi: 0.68,
+  treesDetected: 32,
+};
