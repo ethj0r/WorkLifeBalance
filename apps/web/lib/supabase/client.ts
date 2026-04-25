@@ -61,7 +61,6 @@ async function restRequest<T>(
     };
   }
 }
-
 export type Profile = {
   id: string;
   phone: string;
@@ -71,7 +70,6 @@ export type Profile = {
   balance: number;
   created_at: string;
 };
-
 
 /**
  * Find profile by phone number.
@@ -139,4 +137,17 @@ export async function updateProfile(
   if (result.error || !result.data) return null;
   const rows = Array.isArray(result.data) ? result.data : [result.data];
   return rows[0] ?? null;
+}
+
+export async function updateBalance(
+  id: string,
+  newBalance: number
+): Promise<boolean> {
+  if (!supabaseAvailable || id === "demo") return false;
+  const result = await restRequest<Profile>(
+    "PATCH",
+    `profiles?id=eq.${id}`,
+    { balance: newBalance }
+  );
+  return result.error === null;
 }

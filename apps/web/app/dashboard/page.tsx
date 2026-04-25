@@ -19,8 +19,7 @@ export default function DashboardPage() {
   const [dashboardPlots, setDashboardPlots] = useState<Plot[]>([]);
   const [sessionUser, setSessionUser] = useState(mockUser);
 
-  useEffect(() => {
-    setDashboardPlots(getPlots());
+  function syncSession() {
     const s = getSessionOrDemo();
     setSessionUser({
       name: s.display_name || mockUser.name,
@@ -30,6 +29,19 @@ export default function DashboardPage() {
       regency: s.regency || mockUser.regency,
       balance: s.balance ?? mockUser.balance,
     });
+  }
+  
+  useEffect(() => {
+    setDashboardPlots(getPlots());
+    syncSession();
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        syncSession();
+        setDashboardPlots(getPlots());
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
   const totalArea = useMemo(

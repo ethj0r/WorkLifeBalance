@@ -49,6 +49,15 @@ export function updateSessionProfile(
   setSession({ ...current, ...patch });
 }
 
+export function deductBalance(amount: number): number | null {
+  const current = getSession();
+  if (!current) return null;
+  if (amount <= 0) return current.balance;
+  const newBalance = Math.max(0, current.balance - amount);
+  setSession({ ...current, balance: newBalance });
+  return newBalance;
+}
+
 export function clearSession() {
   ls()?.removeItem(KEY_SESSION);
   ls()?.removeItem(KEY_PENDING_PHONE);
