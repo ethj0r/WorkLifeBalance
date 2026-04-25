@@ -34,7 +34,7 @@ export function PublicHeader() {
         <Link href="/"><Logo /></Link>
         <div className="flex items-center gap-2">
           <Link href="/login" className="hidden text-sm font-semibold text-green-700 sm:block">Masuk</Link>
-          <Link href="/login"><Button size="sm">Daftar sebagai petani</Button></Link>
+          <Link href="/login"><Button size="sm">Daftar</Button></Link>
         </div>
       </div>
     </header>

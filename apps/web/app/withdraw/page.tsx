@@ -17,7 +17,7 @@ export default function WithdrawPage() {
         <div className="mb-8 text-center">
           <div className="eyebrow text-green-700">E-wallet payout</div>
           <h1 className="display-md mt-2">Tarik ke E-Wallet</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-ink-500">Simulasi penarikan saldo carbon credit ke dompet digital petani.</p>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-ink-500">Simulasi penarikan saldo carbon credit ke dompet digital pengguna.</p>
         </div>
         {done ? <Success /> : <Form onSubmit={() => setDone(true)} />}
       </section>

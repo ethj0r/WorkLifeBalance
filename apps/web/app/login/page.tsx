@@ -15,7 +15,7 @@ export default function LoginPage() {
       <PublicHeader />
       <section className="web-container auth-shell">
         <div>
-          <div className="mb-4 inline-flex rounded-full bg-green-50 px-4 py-2 text-xs font-bold uppercase tracking-[.14em] text-green-700">Masuk petani</div>
+          <div className="mb-4 inline-flex rounded-full bg-green-50 px-4 py-2 text-xs font-bold uppercase tracking-[.14em] text-green-700">Masuk</div>
           <h1 className="display-lg max-w-3xl">Verifikasi ringan, akses pendapatan carbon credit.</h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-ink-600">Gunakan nomor HP aktif. OTP demo dikirim secara mock agar flow bisa dites cepat untuk hackathon dan final project.</p>
           <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">

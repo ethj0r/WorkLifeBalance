@@ -38,7 +38,7 @@ export default function NewPlotPage() {
       <section className="web-container py-8 lg:py-10">
         <div className="mb-8 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
           <div>
-            <div className="eyebrow text-green-700">Form MRV petani</div>
+            <div className="eyebrow text-green-700">Form MRV Pengguna</div>
             <h1 className="display-md mt-2">Daftarkan Lahan</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-600">Lengkapi data lahan, polygon, foto bukti, dan detail tanaman untuk verifikasi otomatis.</p>
           </div>
