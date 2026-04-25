@@ -4,6 +4,25 @@ export type PlotStatus =
   | "verified"
   | "credit_issued";
 
+export type LandType =
+  | "Agroforestri"
+  | "Kebun campur"
+  | "Kebun monokultur"
+  | "Hutan rakyat"
+  | "Hutan adat"
+  | "Mangrove"
+  | "Lahan restorasi";
+
+export const LAND_TYPE_OPTIONS: LandType[] = [
+  "Agroforestri",
+  "Kebun campur",
+  "Kebun monokultur",
+  "Hutan rakyat",
+  "Hutan adat",
+  "Mangrove",
+  "Lahan restorasi",
+];
+
 export type PolygonPoint = {
   x: number;
   y: number;
@@ -14,6 +33,7 @@ export type Plot = {
   name: string;
   location: string;
   area: number;
+  landType: LandType;
   status: PlotStatus;
   annualEarnings: number;
   carbonTons: number;

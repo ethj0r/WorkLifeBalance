@@ -22,7 +22,11 @@ import { WizardStepper } from "@/components/wizard/WizardStepper";
 import { LiveProgress } from "@/components/wizard/LiveProgress";
 import { estimateAreaHaFromSvgPolygon } from "@/lib/geo";
 import { formatIDR } from "@/lib/format";
-import type { PolygonPoint } from "@/lib/types";
+import {
+  LAND_TYPE_OPTIONS,
+  type LandType,
+  type PolygonPoint,
+} from "@/lib/types";
 
 const labels = [
   "Kepemilikan",
@@ -38,7 +42,7 @@ type Form = {
   ownership: "self" | "on_behalf" | null;
   name: string;
   address: string;
-  landType: string;
+  landType: LandType;
   year: string;
   trees: string[];
   consent: boolean;
@@ -141,8 +145,8 @@ export default function NewPlotPage() {
               </div>
 
               <p className="mt-2 text-sm leading-6 text-green-900/75">
-                Dokumen legal, foto jelas, dan polygon rapi membantu buyer
-                menilai credit lebih berkualitas.
+                Dokumen legal, foto jelas, jenis lahan, dan polygon rapi
+                membantu buyer menilai credit lebih berkualitas.
               </p>
             </Card>
           </aside>
@@ -385,12 +389,15 @@ function StepDetail({
         <Field label="Jenis lahan">
           <SelectInput
             value={form.landType}
-            onChange={(e) => setForm({ ...form, landType: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, landType: e.target.value as LandType })
+            }
           >
-            <option>Agroforestri</option>
-            <option>Kebun Campur</option>
-            <option>Kebun Monokultur</option>
-            <option>Hutan Adat</option>
+            {LAND_TYPE_OPTIONS.map((landType) => (
+              <option key={landType} value={landType}>
+                {landType}
+              </option>
+            ))}
           </SelectInput>
         </Field>
 
@@ -519,8 +526,17 @@ function StepReview({
             {form.name}
           </div>
           <div className="mt-1 text-sm text-ink-500">
-            {form.address} · {areaHa.toLocaleString("id-ID")} ha ·{" "}
+            {form.address} · {areaHa.toLocaleString("id-ID")} ha
+          </div>
+        </Card>
+
+        <Card>
+          <div className="eyebrow">Jenis lahan</div>
+          <div className="mt-2 font-display text-2xl font-medium">
             {form.landType}
+          </div>
+          <div className="mt-1 text-sm text-ink-500">
+            Disimpan sebagai field resmi data plot.
           </div>
         </Card>
 
