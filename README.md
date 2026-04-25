@@ -12,14 +12,15 @@ Carbon Link is an open-source platform that democratizes access to carbon market
 - **Carbon Credit Generation**  : Kredit karbon dibuat secra digital dari hasil verifikasi
 
 ### Upcoming
-
+- **Backend Integration** : Integrasi seluruh alur ke sistem backend terpusat
+- **Detection Model Pipeline** : Integrasi model AI untuk detection system
+- **Carbon Calculation Engine** : Perhitungan karbon yang lebih akurat & scalable
 
 ## Tech Stack
 - Frontend  : Next.js, TailwindCSS, React, TypeScript
 - Backend   : Next.js API Routes, Prisma
 - Database  : Prisma ORM
 - Tools     : pnpm, PostCSS, ESLint
-
 
 
 
