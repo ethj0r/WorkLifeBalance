@@ -20,11 +20,16 @@ import { Card } from "@/components/ui/Card";
 import { Field, SelectInput, TextInput } from "@/components/ui/Field";
 import { WizardStepper } from "@/components/wizard/WizardStepper";
 import { LiveProgress } from "@/components/wizard/LiveProgress";
-import { estimateAreaHaFromSvgPolygon } from "@/lib/geo";
+import {
+  estimateAreaHaFromSvgPolygon,
+  polygonToSvgPoints,
+} from "@/lib/geo";
 import { formatIDR } from "@/lib/format";
+import { addPlot } from "@/lib/plots-store";
 import {
   LAND_TYPE_OPTIONS,
   type LandType,
+  type Plot,
   type PolygonPoint,
 } from "@/lib/types";
 
@@ -64,6 +69,7 @@ export default function NewPlotPage() {
   const [step, setStep] = useState(0);
   const [verifying, setVerifying] = useState(false);
   const [stage, setStage] = useState(0);
+  const [createdPlotId, setCreatedPlotId] = useState<string | null>(null);
 
   const [form, setForm] = useState<Form>({
     ownership: null,
@@ -88,9 +94,39 @@ export default function NewPlotPage() {
 
   useEffect(() => {
     if (verifying && stage >= 5) {
-      setTimeout(() => router.push("/plots/plot-2?new=1"), 700);
+      setTimeout(() => {
+        if (createdPlotId) {
+          router.push(`/plots/${createdPlotId}?new=1`);
+          return;
+        }
+
+        router.push("/dashboard");
+      }, 700);
     }
-  }, [stage, verifying, router]);
+  }, [stage, verifying, createdPlotId, router]);
+
+  function createPlotFromForm(): Plot {
+    const area = estimateAreaHaFromSvgPolygon(form.polygonPoints);
+    const safeArea = area > 0 ? area : 0.1;
+    const carbonTons = Number((safeArea * 10).toFixed(1));
+    const annualEarnings = Math.round(carbonTons * 70000);
+
+    return {
+      id: `plot-${Date.now()}`,
+      name: form.name.trim() || "Lahan Baru",
+      location: form.address.trim() || "Lokasi belum diisi",
+      area: safeArea,
+      landType: form.landType,
+      status: "verifying",
+      annualEarnings,
+      carbonTons,
+      confidence: 82,
+      ndvi: 0.64,
+      trees: form.trees.length > 0 ? form.trees : ["Belum diisi"],
+      polygon: polygonToSvgPoints(form.polygonPoints),
+      owner: "Asep Suryadi",
+    };
+  }
 
   const next = () => {
     if (step < labels.length - 1) {
@@ -98,6 +134,9 @@ export default function NewPlotPage() {
       return;
     }
 
+    const newPlot = createPlotFromForm();
+    addPlot(newPlot);
+    setCreatedPlotId(newPlot.id);
     setVerifying(true);
   };
 

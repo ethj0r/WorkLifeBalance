@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
   Leaf,
@@ -8,35 +10,72 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { MapPolygon } from "@/components/plots/MapPolygon";
-import { plots } from "@/lib/mock-data";
 import { decimalID, formatIDR, formatIDRShort } from "@/lib/format";
+import { getPlotById } from "@/lib/plots-store";
+import type { Plot } from "@/lib/types";
 
-export default function PlotDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { id: string };
-  searchParams?: { new?: string };
-}) {
-  const plot = plots.find((p) => p.id === params.id);
+export default function PlotDetailPage() {
+  const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
 
-  if (!plot) notFound();
+  const [plot, setPlot] = useState<Plot | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setPlot(getPlotById(params.id));
+    setLoaded(true);
+  }, [params.id]);
+
+  if (!loaded) {
+    return (
+      <main className="web-page">
+        <AppHeader active="dashboard" />
+        <section className="web-container py-8 lg:py-10">
+          <Card className="rounded-2xl p-6 text-sm text-ink-500">
+            Memuat data lahan...
+          </Card>
+        </section>
+      </main>
+    );
+  }
+
+  if (!plot) {
+    return (
+      <main className="web-page">
+        <AppHeader active="dashboard" />
+        <section className="web-container py-8 lg:py-10">
+          <Card className="rounded-2xl p-6">
+            <h1 className="font-display text-3xl font-medium">
+              Lahan tidak ditemukan
+            </h1>
+            <p className="mt-2 text-sm text-ink-500">
+              Data lahan ini tidak ada di mock data atau localStorage.
+            </p>
+            <Link href="/dashboard" className="mt-5 inline-block">
+              <Button>Kembali ke dashboard</Button>
+            </Link>
+          </Card>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="web-page">
       <AppHeader active="dashboard" />
 
       <section className="web-container py-8 lg:py-10">
-        {searchParams?.new && (
+        {searchParams.get("new") && (
           <div className="mb-6 flex gap-2 rounded-2xl bg-green-50 p-4 text-sm font-semibold text-green-700">
             <CheckCircle2 className="h-5 w-5 flex-none" />
-            Verifikasi awal selesai. Estimasi pendapatan sudah bisa dilihat.
+            Lahan baru berhasil didaftarkan. Verifikasi awal sedang berjalan.
           </div>
         )}
 
@@ -80,8 +119,14 @@ export default function PlotDetailPage({
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <Metric label="Luas" value={`${decimalID(plot.area)} ha`} />
               <Metric label="Jenis lahan" value={plot.landType} />
-              <Metric label="Carbon/tahun" value={`${decimalID(plot.carbonTons)} ton`} />
-              <Metric label="Estimasi" value={formatIDRShort(plot.annualEarnings)} />
+              <Metric
+                label="Carbon/tahun"
+                value={`${decimalID(plot.carbonTons)} ton`}
+              />
+              <Metric
+                label="Estimasi"
+                value={formatIDRShort(plot.annualEarnings)}
+              />
             </div>
 
             <Card className="rounded-2xl p-6">
@@ -91,11 +136,17 @@ export default function PlotDetailPage({
               </div>
 
               <div className="mt-5 grid gap-3 text-sm md:grid-cols-3">
-                <InfoBox label="NDVI" value={String(plot.ndvi).replace(".", ",")} />
+                <InfoBox
+                  label="NDVI"
+                  value={String(plot.ndvi).replace(".", ",")}
+                />
                 <InfoBox label="Pohon dominan" value={plot.trees.join(", ")} />
                 <InfoBox label="Confidence" value={`${plot.confidence}%`} />
                 <InfoBox label="Jenis lahan" value={plot.landType} />
-                <InfoBox label="Metode" value="Sentinel-2 + foto + IPCC Tier 1" />
+                <InfoBox
+                  label="Metode"
+                  value="Sentinel-2 + foto + IPCC Tier 1"
+                />
               </div>
             </Card>
           </div>
