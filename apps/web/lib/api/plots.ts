@@ -1,4 +1,4 @@
-import 'server-only';
+// import 'server-only';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { IDR_PER_TCO2E } from '@worklifebalance/types';
 import type { PlotWithDetails, User } from '@worklifebalance/types';
