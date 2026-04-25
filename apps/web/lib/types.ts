@@ -28,6 +28,11 @@ export type PolygonPoint = {
   y: number;
 };
 
+export type LatLng = {
+  lat: number;
+  lng: number;
+};
+
 export type LandImageEntry = {
   file: File;
   previewUrl: string;
