@@ -1,17 +1,15 @@
 # CarbonLink
-![Overview](./overview.png)
+
 Platform MRV carbon credit untuk pemilik lahan agroforestri Indonesia.
 Bantu petani kecil mendaftarkan lahan, verifikasi tutupan pohon secara otomatis,
 dan cairkan estimasi pendapatan carbon credit langsung ke e-wallet.
 
+---
 
-## Features
-### Implemented
+## Fitur
 
-<!-- - **Land Registration**         : Petani mendaftarkan lahan langsung dari aplikasi
-- **Automated MRV**             : Verifikasi lahan otomatis menggunakan satelit & AI
-- **Carbon Estimation**         : Perhitungan serapan karbon berbasis model ML
-- **Carbon Credit Generation**  : Kredit karbon dibuat secra digital dari hasil verifikasi -->
+### Sudah dibuat
+
 | Area | Fitur |
 |---|---|
 | Auth | Login nomor HP + OTP (mock WhatsApp) |
@@ -29,22 +27,20 @@ dan cairkan estimasi pendapatan carbon credit langsung ke e-wallet.
 | API – verifikasi | `POST /api/verification` — kalkulasi confidence, NDVI, carbon estimate |
 | Deteksi pohon | FastAPI + DeepForest: deteksi crown pohon dari foto udara, output bounding box + centroid |
 
-### Upcoming
-<!-- - **Backend Integration** : Integrasi seluruh alur ke sistem backend terpusat
-- **Detection Model Pipeline** : Integrasi model AI untuk detection system
-- **Carbon Calculation Engine** : Perhitungan karbon yang lebih akurat & scalable -->
+### Akan dikembangkan
 
 | Area | Rencana |
 |---|---|
+| Auth | OTP WhatsApp nyata via Twilio / Fonnte; sesi JWT / cookie |
 | Database | Koneksi Prisma → PostgreSQL; ganti mock data ke query nyata |
 | Verifikasi MRV | Integrasi NDVI dari Sentinel-2 GEE; pipeline deteksi pohon via `api-detection` |
 | Polygon | Ganti SVG mock dengan Mapbox GL JS / Leaflet + koordinat GPS nyata |
 | Foto lahan | Upload ke object storage (S3 / Supabase Storage) |
-<!-- | Carbon credit | Kalkulasi metodologi lengkap; integrasi harga pasar VCM | -->
-<!-- | Marketplace | Buyer matching, listing credit, notifikasi deal | -->
-<!-- | Sertifikat | Generate PDF sertifikat carbon credit per lahan | -->
-<!-- | Notifikasi | Push / WA untuk update status verifikasi | -->
-<!-- | Admin panel | Manajemen plot, approval verifikasi, audit trail | -->
+| Carbon credit | Kalkulasi metodologi lengkap; integrasi harga pasar VCM |
+| Marketplace | Buyer matching, listing credit, notifikasi deal |
+| Sertifikat | Generate PDF sertifikat carbon credit per lahan |
+| Notifikasi | Push / WA untuk update status verifikasi |
+| Admin panel | Manajemen plot, approval verifikasi, audit trail |
 
 ---
 
@@ -58,8 +54,11 @@ dan cairkan estimasi pendapatan carbon credit langsung ke e-wallet.
 | Bahasa | TypeScript 5 |
 | UI Library | React 18 |
 | Styling | Tailwind CSS 3 |
+| Ikon | Lucide React |
+| Font | Source Serif 4 (display) · Inter (body) · JetBrains Mono |
 | ORM | Prisma 5 |
 | Database | PostgreSQL |
+| State lahan | localStorage (sementara, sebelum DB) |
 
 ### API Deteksi Pohon — `apps/api-detection`
 
@@ -70,19 +69,42 @@ dan cairkan estimasi pendapatan carbon credit langsung ke e-wallet.
 | Server | Uvicorn |
 | Model ML | DeepForest (`weecology/deepforest-tree`) |
 | Computer Vision | OpenCV · NumPy |
+| Input | Foto udara + koordinat polygon |
+| Output | Jumlah pohon, bounding box, centroid, annotated image base64 |
 
 ---
 
-<!-- ## Getting Started
+## Struktur Proyek
 
-First, run the development server:
+```
+apps/
+├── api-detection/      # FastAPI — deteksi pohon dari foto udara
+│   ├── main.py
+│   └── requirements.txt
+└── web/                # Next.js — platform utama
+    ├── app/            # Pages & API routes
+    ├── components/     # UI components
+    ├── lib/            # Utilities, types, store
+    └── prisma/         # Schema database
+```
 
+---
+
+## Menjalankan Lokal
+
+**Web**
 ```bash
+cd apps/web
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-``` -->
+```
+
+**API Deteksi**
+```bash
+cd apps/api-detection
+python -m venv .venv
+.venv/Scripts/pip install -r requirements.txt   # Windows
+uvicorn main:app --reload --port 8000
+```
+
+> Demo OTP: `123456`
