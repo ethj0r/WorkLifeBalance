@@ -4,20 +4,16 @@ Platform MRV carbon credit untuk pemilik lahan agroforestri Indonesia.
 Bantu petani kecil mendaftarkan lahan, verifikasi tutupan pohon secara otomatis,
 dan cairkan estimasi pendapatan carbon credit langsung ke e-wallet.
 
+---
 
 ## Features
-### Implemented
 
-<!-- - **Land Registration**         : Petani mendaftarkan lahan langsung dari aplikasi
-- **Automated MRV**             : Verifikasi lahan otomatis menggunakan satelit & AI
-- **Carbon Estimation**         : Perhitungan serapan karbon berbasis model ML
-- **Carbon Credit Generation**  : Kredit karbon dibuat secra digital dari hasil verifikasi -->
-| Area | Fitur |
+| Area | Features |
 |---|---|
-| Auth | Login nomor HP + OTP (mock WhatsApp) |
+| Auth | Login nomor HP + OTP |
 | Onboarding | Setup profil: nama, provinsi, kabupaten |
-| Pendaftaran lahan | Wizard 7 langkah — kepemilikan, data diri, lokasi, polygon, detail, foto, review |
-| Polygon editor | Gambar & drag batas lahan di atas peta SVG |
+| Pendaftaran lahan | Wizard 7 steps — kepemilikan, data diri, lokasi, polygon, detail, foto, review |
+| Polygon editor | Gambar & drag batas lahan di atas map |
 | Upload dokumen | Dokumen legal wajib (Sertifikat / SPPT) dengan preview nama file |
 | Upload foto lahan | Minimal 3 foto kondisi lahan dari darat, preview thumbnail real-time |
 | Estimasi karbon | Hitung CO₂e dari luas lahan, NDVI, dan densitas pohon (IPCC Tier 1) |
@@ -29,60 +25,86 @@ dan cairkan estimasi pendapatan carbon credit langsung ke e-wallet.
 | API – verifikasi | `POST /api/verification` — kalkulasi confidence, NDVI, carbon estimate |
 | Deteksi pohon | FastAPI + DeepForest: deteksi crown pohon dari foto udara, output bounding box + centroid |
 
-### Upcoming
-<!-- - **Backend Integration** : Integrasi seluruh alur ke sistem backend terpusat
-- **Detection Model Pipeline** : Integrasi model AI untuk detection system
-- **Carbon Calculation Engine** : Perhitungan karbon yang lebih akurat & scalable -->
-
-| Area | Rencana |
-|---|---|
-| Database | Koneksi Prisma → PostgreSQL; ganti mock data ke query nyata |
-| Verifikasi MRV | Integrasi NDVI dari Sentinel-2 GEE; pipeline deteksi pohon via `api-detection` |
-| Polygon | Ganti SVG mock dengan Mapbox GL JS / Leaflet + koordinat GPS nyata |
-| Foto lahan | Upload ke object storage (S3 / Supabase Storage) |
-<!-- | Carbon credit | Kalkulasi metodologi lengkap; integrasi harga pasar VCM | -->
-<!-- | Marketplace | Buyer matching, listing credit, notifikasi deal | -->
-<!-- | Sertifikat | Generate PDF sertifikat carbon credit per lahan | -->
-<!-- | Notifikasi | Push / WA untuk update status verifikasi | -->
-<!-- | Admin panel | Manajemen plot, approval verifikasi, audit trail | -->
-
 ---
 
 ## Tech Stack
 
-### Web — `apps/web`
-
-| Kategori | Pilihan |
+| Layer | Library / Service |
 |---|---|
 | Framework | Next.js 14 (App Router) |
-| Bahasa | TypeScript 5 |
-| UI Library | React 18 |
+| Language | TypeScript 5 |
 | Styling | Tailwind CSS 3 |
-| ORM | Prisma 5 |
-| Database | PostgreSQL |
-
-### API Deteksi Pohon — `apps/api-detection`
-
-| Kategori | Pilihan |
-|---|---|
-| Framework | FastAPI |
-| Bahasa | Python 3 |
-| Server | Uvicorn |
-| Model ML | DeepForest (`weecology/deepforest-tree`) |
-| Computer Vision | OpenCV · NumPy |
+| Map | Leaflet 1.9 + OpenStreetMap tiles |
+| Reverse geocode | Nominatim (OSM, tanpa API key) |
+| Database schema | Prisma 5 + PostgreSQL |
+| Auth & profiles | Supabase REST (tanpa SDK) |
+| Session | `localStorage` custom, SSR-safe |
+| Icons | lucide-react |
+| API Detection | FastAPI + Uvicorn + DeepForest |
 
 ---
 
-<!-- ## Getting Started
+## Struktur Folder
 
-First, run the development server:
+```
+apps/
+├── web/
+│   ├── app/
+│   │   ├── login/              # Input nomor HP
+│   │   ├── otp/                # Verifikasi OTP
+│   │   ├── profile/            # Setup nama & lokasi
+│   │   ├── dashboard/          # Dashboard utama
+│   │   ├── plots/new/          # Wizard pendaftaran lahan
+│   │   ├── plots/[id]/         # Detail lahan
+│   │   ├── withdraw/           # Tarik saldo
+│   │   └── api/                # Route handlers (plots, verification)
+│   ├── components/
+│   │   ├── maps/               # PinpointMap, PolygonEditor
+│   │   ├── plots/              # PlotCard, MapPolygon
+│   │   ├── ui/                 # Button, Card, Field, AppHeader, TopBar …
+│   │   ├── upload/             # FileUploadCard, ImageUploadList
+│   │   └── wizard/             # WizardStepper, LiveProgress
+│   ├── lib/
+│   │   ├── session.ts          # localStorage session store
+│   │   ├── supabase/client.ts  # Supabase REST client
+│   │   ├── plots-store.ts      # localStorage plots store
+│   │   ├── carbon-estimate.ts  # Kalkulasi tonsCO2e & pendapatan
+│   │   ├── types.ts            # Shared types
+│   │   ├── format.ts           # IDR formatter
+│   │   └── geo.ts              # Polygon area & SVG helpers
+│   └── prisma/schema.prisma
+└── api-detection/
+    └── main.py
+```
+
+---
+
+## How to Run
+
+### Web
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cd apps/web
 pnpm dev
-# or
-bun dev
-``` -->
+# → http://localhost:3000
+```
+
+### API Detection
+
+```bash
+cd apps/api-detection
+
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+# Mac / Linux
+source .venv/bin/activate
+
+pip install -r requirements.txt
+pip install deepforest opencv-python numpy python-multipart
+
+uvicorn main:app --reload --port 8000
+# → http://localhost:8000
+```
