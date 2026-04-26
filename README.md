@@ -42,6 +42,30 @@ dan cairkan estimasi pendapatan carbon credit langsung ke e-wallet.
 | Icons | lucide-react |
 | API Detection | FastAPI + Uvicorn + DeepForest |
 
+## Cara Untuk Menjalankan Development Server
+1. Buat Python Venv
+```
+python -m venv .venv
+```
+2. Install Library yang Menjadi Requirement
+```
+cd apps\api-detection
+pip install -r requirements.txt
+```
+3. Install package pnpm
+```
+pnpm install
+```
+4. Jalankan server
+```bash
+pnpm dev (on root)
+uv run uvicorn main:app --reload --port 8000 (on apps\api-detection)
+``` 
+OR
+```bash
+pnpm turbo run dev (on root)
+```
+
 ---
 
 ## Struktur Folder
